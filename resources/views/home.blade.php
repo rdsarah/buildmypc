@@ -32,33 +32,39 @@
 
     <div class="row g-4">
         <div class="col-md-4">
-            <div class="glass-card">
-                <div class="icon-box green">⌁</div>
-                <h5 class="fw-bold">Browse Components</h5>
-                <p class="empty-text mb-0">
-                    Explore CPUs, GPUs, RAM, motherboards, storage, PSU, and casing in one catalog.
-                </p>
-            </div>
+            <a href="{{ route('products.index') }}" class="feature-card-link">
+                <div class="glass-card h-100">
+                    <div class="icon-box green">⌁</div>
+                    <h5>BROWSE COMPONENTS</h5>
+                    <p>
+                        Explore CPUs, GPUs, RAM, motherboards, storage, PSU, and casing in one catalog.
+                    </p>
+                </div>
+            </a>
         </div>
 
         <div class="col-md-4">
-            <div class="glass-card">
-                <div class="icon-box pink">✦</div>
-                <h5 class="fw-bold">Check Compatibility</h5>
-                <p class="empty-text mb-0">
-                    Detect socket mismatch, RAM type issues, PSU limitations, and casing clearance problems.
-                </p>
-            </div>
+            <a href="{{ route('builder.index') }}" class="feature-card-link">
+                <div class="glass-card h-100">
+                    <div class="icon-box pink">✦</div>
+                    <h5>CHECK COMPATIBILITY</h5>
+                    <p>
+                        Detect socket mismatch, RAM type issues, PSU limitations, and casing clearance problems.
+                    </p>
+                </div>
+            </a>
         </div>
 
         <div class="col-md-4">
-            <div class="glass-card">
-                <div class="icon-box blue">◈</div>
-                <h5 class="fw-bold">Save and Order</h5>
-                <p class="empty-text mb-0">
-                    Save builds, compare options, add selected components to cart, and track orders.
-                </p>
-            </div>
+            <a href="/cart" class="feature-card-link">
+                <div class="glass-card h-100">
+                    <div class="icon-box blue">◈</div>
+                    <h5>SAVE AND ORDER</h5>
+                    <p>
+                        Save builds, compare options, add selected components to cart, and track orders.
+                    </p>
+                </div>
+            </a>
         </div>
     </div>
 </section>

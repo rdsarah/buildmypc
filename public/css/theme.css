@@ -467,3 +467,127 @@ body {
         font-size: 1rem;
     }
 }
+
+/* Product Catalog Feature */
+
+.filter-panel {
+    position: sticky;
+    top: 100px;
+}
+
+.product-card {
+    display: flex;
+    flex-direction: column;
+}
+
+.product-card-image {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    border-radius: 18px;
+    border: 1px solid rgba(9, 219, 199, 0.16);
+    background: rgba(13, 26, 47, 0.8);
+}
+
+.product-detail-image {
+    width: 100%;
+    border-radius: 22px;
+    border: 1px solid rgba(9, 219, 199, 0.16);
+    background: rgba(13, 26, 47, 0.8);
+}
+
+.product-price,
+.product-detail-price {
+    color: var(--neon-cyan);
+    text-shadow: 0 0 12px rgba(9, 219, 199, 0.2);
+    font-family: "Orbitron", sans-serif;
+}
+
+.spec-mini-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+}
+
+.spec-mini-list span {
+    display: inline-block;
+    padding: 0.3rem 0.55rem;
+    border-radius: 999px;
+    background: rgba(9, 219, 199, 0.08);
+    border: 1px solid rgba(9, 219, 199, 0.14);
+    color: var(--text-muted);
+    font-size: 0.85rem;
+}
+
+.spec-box {
+    height: 100%;
+    padding: 1rem;
+    border-radius: 16px;
+    background: rgba(13, 26, 47, 0.45);
+    border: 1px solid rgba(189, 9, 39, 0.16);
+}
+
+.spec-box span {
+    display: block;
+    color: var(--text-soft);
+    margin-bottom: 0.25rem;
+    font-size: 0.9rem;
+}
+
+.spec-box strong {
+    color: var(--text-main);
+    font-family: "Rajdhani", sans-serif;
+    font-size: 1.1rem;
+}
+
+.pagination {
+    gap: 0.35rem;
+}
+
+.page-link {
+    background: rgba(13, 26, 47, 0.8);
+    border: 1px solid rgba(9, 219, 199, 0.18);
+    color: var(--text-main);
+}
+
+.page-link:hover {
+    background: rgba(9, 219, 199, 0.12);
+    border-color: rgba(9, 219, 199, 0.45);
+    color: var(--neon-cyan);
+}
+
+.page-item.active .page-link {
+    background: var(--neon-cyan);
+    border-color: var(--neon-cyan);
+    color: #06111b;
+}
+
+.page-item.disabled .page-link {
+    background: rgba(13, 26, 47, 0.35);
+    border-color: rgba(255, 255, 255, 0.05);
+    color: rgba(255, 255, 255, 0.3);
+}
+
+@media (max-width: 991px) {
+    .filter-panel {
+        position: static;
+    }
+}
+
+/* Clickable homepage feature cards */
+
+.feature-card-link {
+    display: block;
+    height: 100%;
+    color: inherit;
+    text-decoration: none;
+}
+
+.feature-card-link:hover {
+    color: inherit;
+    text-decoration: none;
+}
+
+.feature-card-link .glass-card {
+    cursor: pointer;
+}
