@@ -284,7 +284,7 @@ class ImportBuildCoresProducts extends Command
             'price' => $this->demoPrice($localCategoryName, $name),
             'stock' => $this->demoStock($name),
             'image_url' => 'https://placehold.co/600x400/0D1A2F/09DBC7?text=' . urlencode($name),
-            'description' => "Imported PC component from BuildCores OpenDB for the BuildMyPC product catalog.",
+            'description' => null,
             'socket_type' => $socketType,
             'ram_type' => $ramType,
             'form_factor' => $formFactor,
