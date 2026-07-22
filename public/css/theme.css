@@ -733,3 +733,25 @@ body {
         position: static;
     }
 }
+
+.build-alert {
+    border-radius: 16px;
+    padding: 1rem 1.3rem;
+    margin-bottom: 1.5rem;
+    font-family: var(--font-body);
+    letter-spacing: 0.03em;
+}
+
+.build-alert-success {
+    color: var(--neon-cyan);
+    background: rgba(9, 219, 199, 0.08);
+    border: 1px solid rgba(9, 219, 199, 0.35);
+    box-shadow: 0 0 24px rgba(9, 219, 199, 0.08);
+}
+
+.build-alert-danger {
+    color: #ffd6df;
+    background: rgba(189, 9, 39, 0.12);
+    border: 1px solid rgba(189, 9, 39, 0.45);
+    box-shadow: 0 0 24px rgba(189, 9, 39, 0.12);
+}

@@ -22,13 +22,13 @@
     </div>
 
     @if (session('success'))
-        <div class="alert alert-success">
+        <div class="build-alert build-alert-success">
             {{ session('success') }}
         </div>
     @endif
 
     @if ($errors->any())
-        <div class="alert alert-danger">
+        <div class="build-alert build-alert-danger">
             {{ $errors->first() }}
         </div>
     @endif
