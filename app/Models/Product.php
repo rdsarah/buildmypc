@@ -24,11 +24,16 @@ class Product extends Model
         'gpu_length_mm',
         'case_clearance_mm',
         'is_active',
+        'source_name',
+        'source_id',
+        'source_category',
+        'specs_json',
     ];
 
     protected $casts = [
         'price' => 'decimal:2',
         'is_active' => 'boolean',
+        'specs_json' => 'array',
     ];
 
     public function category()
