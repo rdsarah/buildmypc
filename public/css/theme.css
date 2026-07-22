@@ -591,3 +591,145 @@ body {
 .feature-card-link .glass-card {
     cursor: pointer;
 }
+
+.builder-slot {
+    border: 1px solid rgba(9, 219, 199, 0.18);
+    border-radius: 22px;
+    padding: 1.2rem;
+    background:
+        linear-gradient(145deg, rgba(13, 26, 47, 0.92), rgba(65, 30, 58, 0.72));
+    box-shadow: 0 18px 45px rgba(0, 0, 0, 0.22);
+}
+
+.builder-selected {
+    border: 1px solid rgba(9, 219, 199, 0.26);
+    border-radius: 16px;
+    padding: 0.9rem;
+    background: rgba(9, 219, 199, 0.06);
+}
+
+.builder-selected strong,
+.builder-selected span {
+    display: block;
+}
+
+.builder-selected span {
+    color: rgba(255, 255, 255, 0.65);
+    font-size: 0.9rem;
+}
+
+.product-select {
+    background-color: rgba(13, 26, 47, 0.95);
+    border: 1px solid rgba(9, 219, 199, 0.25);
+    color: #ffffff;
+}
+
+.product-select:focus {
+    background-color: rgba(13, 26, 47, 0.98);
+    border-color: var(--neon-cyan);
+    color: #ffffff;
+    box-shadow: 0 0 0 0.25rem rgba(9, 219, 199, 0.12);
+}
+
+.product-select option {
+    background-color: #0D1A2F;
+    color: #ffffff;
+}
+
+.summary-line {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.8rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.summary-line span {
+    color: rgba(255, 255, 255, 0.65);
+}
+
+.summary-line strong {
+    color: #ffffff;
+}
+
+.compat-overall {
+    border-radius: 18px;
+    padding: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.compat-overall p {
+    margin: 0.35rem 0 0;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.compat-compatible {
+    background: rgba(9, 219, 199, 0.09);
+    border-color: rgba(9, 219, 199, 0.35);
+}
+
+.compat-incompatible {
+    background: rgba(189, 9, 39, 0.12);
+    border-color: rgba(189, 9, 39, 0.45);
+}
+
+.compat-needs_review,
+.compat-incomplete {
+    background: rgba(240, 201, 250, 0.08);
+    border-color: rgba(240, 201, 250, 0.25);
+}
+
+.compat-card {
+    border-radius: 16px;
+    padding: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.compat-card p {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.68);
+}
+
+.compat-card-pass {
+    background: rgba(9, 219, 199, 0.08);
+    border-color: rgba(9, 219, 199, 0.3);
+}
+
+.compat-card-fail {
+    background: rgba(189, 9, 39, 0.12);
+    border-color: rgba(189, 9, 39, 0.45);
+}
+
+.compat-card-warning {
+    background: rgba(240, 201, 250, 0.08);
+    border-color: rgba(240, 201, 250, 0.25);
+}
+
+.missing-pill {
+    display: inline-flex;
+    border-radius: 999px;
+    padding: 0.35rem 0.7rem;
+    background: rgba(189, 9, 39, 0.13);
+    border: 1px solid rgba(189, 9, 39, 0.35);
+    color: #ffffff;
+    font-size: 0.82rem;
+}
+
+.builder-sidebar {
+    position: sticky;
+    top: 6rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    z-index: 2;
+}
+
+.builder-sidebar .glass-card {
+    height: auto;
+}
+
+@media (max-width: 991px) {
+    .builder-sidebar {
+        position: static;
+    }
+}
