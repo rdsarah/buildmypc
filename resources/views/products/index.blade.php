@@ -204,7 +204,7 @@
                                 <span class="status-pill">
                                     {{ $product->category->name }}
                                 </span>
-
+                                
                                 <span class="empty-text">
                                     {{ $product->stock_status }}
                                 </span>

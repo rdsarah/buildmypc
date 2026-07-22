@@ -24,10 +24,16 @@ class Product extends Model
         'gpu_length_mm',
         'case_clearance_mm',
         'is_active',
+        'original_price_usd',
+        'exchange_rate_used',
+        'source_dataset',
+        'source_part_type',
     ];
 
     protected $casts = [
         'price' => 'decimal:2',
+        'original_price_usd' => 'decimal:2',
+        'exchange_rate_used' => 'decimal:2',
         'is_active' => 'boolean',
     ];
 
