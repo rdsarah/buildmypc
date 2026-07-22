@@ -74,7 +74,6 @@
                 </div>
             </div>
 
-            
             <hr class="border-secondary my-4">
 
             <h5 class="mb-3">Technical Specifications</h5>
