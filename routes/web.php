@@ -25,6 +25,8 @@ Route::get('/orders', function () {
     return view('orders.index');
 })->name('orders.index');
 
-Route::get('/admin', function () {
-    return view('admin.dashboard');
-})->name('admin.dashboard');
+use App\Http\Controllers\AdminController;
+
+Route::get('/admin', [AdminController::class, 'dashboard'])->name('admin.dashboard');
+Route::post('/admin/products/{product}/update', [AdminController::class, 'updateProduct'])->name('admin.products.update');
+Route::post('/admin/orders/{order}/status', [AdminController::class, 'updateOrderStatus'])->name('admin.orders.updateStatus');
