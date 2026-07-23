@@ -2,9 +2,180 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\BuildTemplate;
+use App\Models\Category;
+use App\Models\Product;
 use Illuminate\Http\Request;
 
 class BuildController extends Controller
 {
-    //
+    public function index()
+    {
+        $build = session()->get('active_build', []);
+        
+        $selectedProducts = Product::with(['category', 'brand'])
+            ->whereIn('id', array_values($build))
+            ->get()
+            ->keyBy(fn($p) => $p->category->name);
+
+        $totalPrice = $selectedProducts->sum('price');
+        $totalWattage = $selectedProducts->sum('wattage');
+
+        // Calculate Compatibility Warnings
+        $warnings = [];
+
+        $cpu = $selectedProducts->get('CPU');
+        $mobo = $selectedProducts->get('Motherboard');
+        $ram = $selectedProducts->get('RAM');
+        $gpu = $selectedProducts->get('GPU');
+        $casing = $selectedProducts->get('Casing');
+        $psu = $selectedProducts->get('PSU');
+
+        // 1. CPU & Motherboard Socket Check
+        if ($cpu && $mobo && $cpu->socket_type && $mobo->socket_type) {
+            if (strtolower($cpu->socket_type) !== strtolower($mobo->socket_type)) {
+                $warnings[] = "Socket Mismatch: The selected CPU ({$cpu->name}) has socket type '{$cpu->socket_type}', but the Motherboard ({$mobo->name}) has socket '{$mobo->socket_type}'.";
+            }
+        }
+
+        // 2. Motherboard & RAM Type Check
+        if ($mobo && $ram && $mobo->ram_type && $ram->ram_type) {
+            if (strtolower($mobo->ram_type) !== strtolower($ram->ram_type)) {
+                $warnings[] = "RAM Generation Mismatch: The selected Motherboard ({$mobo->name}) supports {$mobo->ram_type} RAM, but the RAM ({$ram->name}) is {$ram->ram_type}.";
+            }
+        }
+
+        // 3. PSU Wattage Check
+        if ($psu && $psu->wattage && $totalWattage) {
+            $requiredWattage = $totalWattage - ($psu->wattage); // PSU is already in total
+            $safePSULevel = $requiredWattage + 50; // 50W safety margin
+            if ($psu->wattage < $safePSULevel) {
+                $warnings[] = "PSU Wattage Alert: Total estimated wattage is {$requiredWattage}W. The selected PSU ({$psu->name}) delivers {$psu->wattage}W, which doesn't meet the safe recommended minimum of {$safePSULevel}W.";
+            }
+        }
+
+        // 4. GPU Length & Casing Clearance Check
+        if ($gpu && $casing && $gpu->gpu_length_mm && $casing->case_clearance_mm) {
+            if ($gpu->gpu_length_mm > $casing->case_clearance_mm) {
+                $warnings[] = "Casing Clearance Warning: The GPU ({$gpu->name}) is {$gpu->gpu_length_mm}mm long, but the Casing ({$casing->name}) only has clearance for up to {$casing->case_clearance_mm}mm GPU.";
+            }
+        }
+
+        $templates = BuildTemplate::with('products.category')->get();
+
+        return view('builder.index', compact('selectedProducts', 'totalPrice', 'totalWattage', 'warnings', 'templates'));
+    }
+
+    public function addComponent(Request $request, Product $product)
+    {
+        $build = session()->get('active_build', []);
+        $build[$product->category->name] = $product->id;
+        session()->put('active_build', $build);
+
+        return redirect()->route('builder.index')->with('success', "'{$product->name}' added to your build.");
+    }
+
+    public function removeComponent($categoryName)
+    {
+        $build = session()->get('active_build', []);
+        if (isset($build[$categoryName])) {
+            unset($build[$categoryName]);
+            session()->put('active_build', $build);
+        }
+
+        return redirect()->route('builder.index')->with('success', "Removed {$categoryName} from your build.");
+    }
+
+    public function clearBuild()
+    {
+        session()->forget('active_build');
+        return redirect()->route('builder.index')->with('success', "Current build cleared.");
+    }
+
+    public function cloneTemplate(BuildTemplate $template)
+    {
+        $build = [];
+        foreach ($template->products as $product) {
+            $build[$product->category->name] = $product->id;
+        }
+        session()->put('active_build', $build);
+
+        return redirect()->route('builder.index')->with('success', "Cloned template '{$template->name}' as your active build.");
+    }
+
+    public function suggestBuild(Request $request)
+    {
+        $request->validate([
+            'budget' => 'required|numeric|min:20000',
+            'focus' => 'required|string|in:gaming,editing,office',
+        ]);
+
+        $budget = $request->budget;
+        $focus = $request->focus;
+
+        // Allocation weight systems
+        $allocations = [
+            'gaming' => [
+                'CPU' => 0.22,
+                'Motherboard' => 0.13,
+                'RAM' => 0.08,
+                'GPU' => 0.35,
+                'Storage' => 0.07,
+                'PSU' => 0.08,
+                'Casing' => 0.07,
+            ],
+            'editing' => [
+                'CPU' => 0.30,
+                'Motherboard' => 0.15,
+                'RAM' => 0.15,
+                'GPU' => 0.18,
+                'Storage' => 0.10,
+                'PSU' => 0.06,
+                'Casing' => 0.06,
+            ],
+            'office' => [
+                'CPU' => 0.35,
+                'Motherboard' => 0.20,
+                'RAM' => 0.15,
+                'Storage' => 0.15,
+                'PSU' => 0.08,
+                'Casing' => 0.07,
+            ]
+        ];
+
+        $weights = $allocations[$focus];
+        $build = [];
+
+        foreach ($weights as $catName => $weight) {
+            $category = Category::where('name', $catName)->first();
+            if (!$category) {
+                continue;
+            }
+
+            $targetPrice = $budget * $weight;
+
+            // Search for products under target price
+            $product = Product::where('category_id', $category->id)
+                ->where('is_active', true)
+                ->where('price', '<=', $targetPrice)
+                ->orderBy('price', 'desc')
+                ->first();
+
+            // Fallback to cheapest if none fits under the allocation
+            if (!$product) {
+                $product = Product::where('category_id', $category->id)
+                    ->where('is_active', true)
+                    ->orderBy('price', 'asc')
+                    ->first();
+            }
+
+            if ($product) {
+                $build[$catName] = $product->id;
+            }
+        }
+
+        session()->put('active_build', $build);
+
+        return redirect()->route('builder.index')->with('success', "Auto-populated a {$focus}-focused build under ৳" . number_format($budget) . ".");
+    }
 }

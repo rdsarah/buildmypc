@@ -177,5 +177,106 @@
             </div>
         </div>
     </div>
+
+    <!-- Build Templates Management -->
+    <div class="col-lg-8">
+        <div class="glass-card mb-4">
+            <h5 class="fw-bold mb-3">Starter Build Templates</h5>
+            
+            <div class="table-responsive">
+                <table class="table table-dark table-striped align-middle" style="background: rgba(13, 26, 47, 0.45); border-radius: 12px; overflow: hidden;">
+                    <thead>
+                        <tr>
+                            <th class="ps-3">Template Name</th>
+                            <th>Target Use</th>
+                            <th>Components Included</th>
+                            <th>Total Price</th>
+                            <th class="pe-3 text-end" style="width: 100px;">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($templates as $template)
+                            <tr>
+                                <td class="ps-3">
+                                    <div class="fw-bold text-white">{{ $template->name }}</div>
+                                    <div class="small text-muted">{{ $template->description }}</div>
+                                </td>
+                                <td>
+                                    <span class="status-pill">{{ $template->target_use }}</span>
+                                </td>
+                                <td>
+                                    <ul class="list-unstyled mb-0 small text-white-50">
+                                        @foreach($template->products as $p)
+                                            <li>• {{ $p->category->name }}: {{ $p->name }}</li>
+                                        @endforeach
+                                    </ul>
+                                </td>
+                                <td>
+                                    <span class="product-price">৳{{ number_format($template->total_price, 0) }}</span>
+                                </td>
+                                <td class="pe-3 text-end">
+                                    <form action="{{ route('admin.templates.delete', $template->id) }}" method="POST">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-sm btn-soft text-danger border-danger py-1 px-2" onclick="return confirm('Are you sure you want to delete this template?')">Delete</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="5" class="text-center py-4 text-muted">No custom templates created.</td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Template Form -->
+    <div class="col-lg-4">
+        <div class="glass-card">
+            <h5 class="fw-bold mb-3">Create Starter Build</h5>
+            <form action="{{ route('admin.templates.create') }}" method="POST">
+                @csrf
+                <div class="mb-3">
+                    <label class="form-label text-muted small">Template Name</label>
+                    <input type="text" name="name" class="form-control" placeholder="e.g. Extreme 4K Gaming" required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label text-muted small">Description</label>
+                    <textarea name="description" rows="2" class="form-control" placeholder="e.g. Best performance-per-dollar for gaming."></textarea>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label text-muted small">Target Use Focus</label>
+                    <select name="target_use" class="form-select" required>
+                        <option value="gaming">Gaming</option>
+                        <option value="editing">Editing / Design</option>
+                        <option value="office">Office / Productivity</option>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label text-muted small">Select Pre-configured Components</label>
+                    @foreach(['CPU', 'Motherboard', 'RAM', 'GPU', 'Storage', 'PSU', 'Casing'] as $cat)
+                        <div class="mb-2">
+                            <select name="products[]" class="form-select form-select-sm">
+                                <option value="">Select {{ $cat }} (Optional)</option>
+                                @isset($productsByCategory[$cat])
+                                    @foreach($productsByCategory[$cat] as $prod)
+                                        <option value="{{ $prod->id }}">{{ $prod->name }} (৳{{ number_format($prod->price, 0) }})</option>
+                                    @endforeach
+                                @endisset
+                            </select>
+                        </div>
+                    @endforeach
+                </div>
+
+                <button type="submit" class="btn btn-fern w-100">Create Template</button>
+            </form>
+        </div>
+    </div>
 </div>
 @endsection

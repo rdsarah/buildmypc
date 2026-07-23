@@ -254,6 +254,11 @@
                             <a href="{{ route('products.show', $product) }}" class="btn btn-soft w-100 mt-3">
                                 View Details
                             </a>
+
+                            <form action="{{ route('builder.add', $product) }}" method="POST" class="mt-2 w-100">
+                                @csrf
+                                <button type="submit" class="btn btn-fern w-100">Add to Build</button>
+                            </form>
                         </div>
                     </div>
                 @endforeach

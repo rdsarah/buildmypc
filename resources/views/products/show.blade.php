@@ -128,6 +128,11 @@
                     </div>
                 </div>
             </div>
+
+            <form action="{{ route('builder.add', $product) }}" method="POST" class="mt-4">
+                @csrf
+                <button type="submit" class="btn btn-fern w-100 py-3">Add to Build</button>
+            </form>
         </div>
     </div>
 </div>
