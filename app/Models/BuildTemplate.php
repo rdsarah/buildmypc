@@ -11,6 +11,7 @@ class BuildTemplate extends Model
         'name',
         'description',
         'target_use',
+        'target_use',
     ];
 
     public function products(): BelongsToMany

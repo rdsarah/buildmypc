@@ -178,4 +178,91 @@ class BuildController extends Controller
 
         return redirect()->route('builder.index')->with('success', "Auto-populated a {$focus}-focused build under ৳" . number_format($budget) . ".");
     }
+
+    public function gallery()
+    {
+        // Fetch public/saved build templates with their products 
+        $builds = BuildTemplate::with('products')->latest()->paginate(12);
+
+        return view('builder.gallery', compact('builds'));
+    }
+    public function store(Request $request)
+    {
+        // 1. Validate incoming build data
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'product_ids' => 'required|array',
+            'product_ids.*' => 'exists:products,id',
+        ]);
+
+        // 2. Create the saved build record
+        $build = BuildTemplate::create([
+            'user_id' => auth()->id() ?? null, // optional: link to logged-in user
+            'name' => $validated['name'],
+            'description' => $validated['description'] ?? null,
+            'target_use' => 'Custom',
+        ]);
+
+        // 3. Attach selected component product IDs into the pivot table
+        $build->products()->attach($validated['product_ids']);
+
+        return redirect()->route('gallery.index')->with('success', 'Build saved successfully!');
+    }
+    // for deleting build
+    public function destroy($id)
+    {
+        $build = BuildTemplate::findOrFail($id);
+        
+        // Detach pivot relationship first, then delete build
+        $build->products()->detach();
+        $build->delete();
+
+        return redirect()->route('gallery.index')->with('success', 'Build deleted successfully!');
+    }
+
+    /**
+     * Edit a saved build (loads its products into the active builder session).
+     */
+    public function edit($id)
+    {
+        $build = BuildTemplate::with('products.category')->findOrFail($id);
+
+        // Load build components into session
+        $selected = [];
+        foreach ($build->products as $product) {
+            $type = $product->category?->slug ?? strtolower($product->category?->name ?? 'other');
+            $selected[strtoupper($type)] = $product->id;
+        }
+
+        session(['builder_selected' => $selected]);
+
+        return redirect()->route('builder.index')->with('success', "Loaded '{$build->name}' into builder for editing!");
+    }
+
+    /**
+     * Add all build components to the shopping cart.
+     */
+    public function addToCart($id)
+    {
+        $build = BuildTemplate::with('products')->findOrFail($id);
+        $cart = session()->get('cart', []);
+
+        foreach ($build->products as $product) {
+            if (isset($cart[$product->id])) {
+                $cart[$product->id]['quantity']++;
+            } else {
+                $cart[$product->id] = [
+                    'name'     => $product->name,
+                    'quantity' => 1,
+                    'price'    => $product->price,
+                    'image'    => $product->image ?? null,
+                ];
+            }
+        }
+
+        session()->put('cart', $cart);
+
+        return redirect()->back()->with('success', "All components from '{$build->name}' were added to your cart!");
+    }
 }

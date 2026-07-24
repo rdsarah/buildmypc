@@ -11,6 +11,7 @@
 
     <div class="d-flex gap-2">
         <a href="/products" class="btn btn-soft">Choose Components</a>
+        <a href="{{ route('gallery.index') }}" class="btn btn-soft">View Gallery</a>
         @if(count($selectedProducts) > 0)
             <form action="{{ route('builder.clear') }}" method="POST" class="d-inline">
                 @csrf
@@ -108,7 +109,7 @@
                 <span class="empty-text">Estimated Wattage:</span> 
                 <strong class="text-white">{{ $totalWattage }}W</strong>
             </div>
-            <div class="mb-0">
+            <div class="mb-3">
                 <span class="empty-text">Compatibility:</span> 
                 @if(count($selectedProducts) == 0)
                     <span class="badge bg-secondary">Empty Build</span>
@@ -118,6 +119,13 @@
                     <span class="badge bg-success">Compatible</span>
                 @endif
             </div>
+
+            <!-- SAVE BUILD BUTTON -->
+            @if(count($selectedProducts) > 0)
+                <button type="button" class="btn btn-fern w-100" data-bs-toggle="modal" data-bs-target="#saveBuildModal">
+                    💾 Save Build to Gallery
+                </button>
+            @endif
         </div>
 
         <!-- Budget-Based build suggestion -->
@@ -196,4 +204,38 @@
         @endforelse
     </div>
 </section>
+
+<!-- Modal for Saving Build -->
+<div class="modal fade" id="saveBuildModal" tabindex="-1" aria-labelledby="saveBuildModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content glass-card text-white">
+            <div class="modal-header border-secondary">
+                <h5 class="modal-title" id="saveBuildModalLabel">Save PC Build</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{ route('builder.save') }}" method="POST">
+                @csrf
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Build Title</label>
+                        <input type="text" name="name" class="form-control" placeholder="e.g. My Ultimate Gaming Rig" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Description (Optional)</label>
+                        <textarea name="description" class="form-control" rows="3" placeholder="Brief info about this build setup..."></textarea>
+                    </div>
+
+                    {{-- Pass selected product IDs --}}
+                    @foreach($selectedProducts as $product)
+                        <input type="hidden" name="product_ids[]" value="{{ $product->id }}">
+                    @endforeach
+                </div>
+                <div class="modal-footer border-secondary">
+                    <button type="button" class="btn btn-soft" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-fern">Save Build</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 @endsection
