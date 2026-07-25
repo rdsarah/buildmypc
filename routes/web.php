@@ -37,3 +37,10 @@ Route::post('/admin/products/{product}/update', [AdminController::class, 'update
 Route::post('/admin/orders/{order}/status', [AdminController::class, 'updateOrderStatus'])->name('admin.orders.updateStatus');
 Route::post('/admin/templates', [AdminController::class, 'createTemplate'])->name('admin.templates.create');
 Route::delete('/admin/templates/{template}', [AdminController::class, 'deleteTemplate'])->name('admin.templates.delete');
+// for build gallery
+Route::get('/gallery', [BuildController::class, 'gallery'])->name('gallery.index');
+Route::post('/builder/save', [BuildController::class, 'store'])->name('builder.save');
+// delete get post for build
+Route::delete('/gallery/{id}', [BuildController::class, 'destroy'])->name('builder.destroy');
+Route::get('/gallery/{id}/edit', [BuildController::class, 'edit'])->name('builder.edit');
+Route::post('/gallery/{id}/add-to-cart', [BuildController::class, 'addToCart'])->name('builder.addToCart');
