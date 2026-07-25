@@ -58,3 +58,10 @@ Route::post('/admin/login', [AuthController::class, 'adminLogin'])->name('admin.
 
 // Logout Route
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
+// Build Gallery Routes
+Route::get('/gallery', [BuildController::class, 'gallery'])->name('gallery.index');
+Route::post('/builder/save', [BuildController::class, 'store'])->name('builder.save');
+Route::delete('/gallery/{id}', [BuildController::class, 'destroy'])->name('builder.destroy');
+Route::get('/gallery/{id}/edit', [BuildController::class, 'edit'])->name('builder.edit');
+Route::post('/gallery/{id}/add-to-cart', [BuildController::class, 'addToCart'])->name('builder.addToCart');
