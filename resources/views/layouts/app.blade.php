@@ -35,9 +35,33 @@
                     <li class="nav-item">
                         <a href="/orders" class="nav-link">Orders</a>
                     </li>
-                    <li class="nav-item">
-                        <a href="/admin" class="nav-link">Admin</a>
-                    </li>
+
+                    <!-- Authentication Action Group -->
+                    @if(auth()->check())
+                        <li class="nav-item ms-lg-3 mt-2 mt-lg-0">
+                            <span class="text-light me-2 small">Hi, {{ auth()->user()->name ?? 'User' }}</span>
+                        </li>
+                        <li class="nav-item ms-lg-2 mt-2 mt-lg-0">
+                            <form action="{{ route('logout') }}" method="POST" class="d-inline">
+                                @csrf
+                                <button type="submit" class="btn btn-soft btn-sm px-3 py-2">
+                                    Logout
+                                </button>
+                            </form>
+                        </li>
+                    @else
+                        <li class="nav-item ms-lg-3 mt-2 mt-lg-0 d-flex gap-2">
+                            <a href="{{ route('login') }}" class="btn btn-soft btn-sm px-3 py-2 d-inline-flex align-items-center">
+                                Sign In
+                            </a>
+                            <a href="{{ route('register') }}" class="btn btn-fern btn-sm px-3 py-2 d-inline-flex align-items-center">
+                                Sign Up
+                            </a>
+                            <a href="{{ route('admin.login') }}" class="btn btn-soft btn-sm px-3 py-2 d-inline-flex align-items-center border-warning text-warning">
+                                Admin Portal
+                            </a>
+                        </li>
+                    @endif
                 </ul>
             </div>
         </div>
