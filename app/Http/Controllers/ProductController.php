@@ -6,6 +6,7 @@ use App\Models\Brand;
 use App\Models\Category;
 use App\Models\Product;
 use Illuminate\Http\Request;
+use App\Models\Review;
 
 class ProductController extends Controller
 {
@@ -134,7 +135,7 @@ class ProductController extends Controller
             abort(404);
         }
 
-        $product->load(['category', 'brand']);
+        $product->load(['category', 'brand', 'reviews.user']);
 
         $relatedProducts = Product::with(['category', 'brand'])
             ->where('is_active', true)
@@ -146,4 +147,39 @@ class ProductController extends Controller
 
         return view('products.show', compact('product', 'relatedProducts'));
     }
+
+    
+
+// In your method that shows product details:
+
+        // review method
+    public function storeReview(Request $request, $productId)
+    {
+        $request->validate([
+            'rating' => 'required|integer|min:1|max:5',
+            'comment' => 'required|string|max:1000',
+        ]);
+
+        Review::create([
+            'product_id' => $productId,
+            'user_id'    => auth()->id(), // null if guest
+            'rating'     => $request->rating,
+            'comment'    => $request->comment,
+        ]);
+
+        return back()->with('success', 'Review submitted successfully!');
+    }
+
+    // delete review
+    public function destroyReview(Review $review)
+        {
+            // Ensure only the owner of the review (or an admin) can delete it
+            if (auth()->id() !== $review->user_id) {
+                abort(403, 'Unauthorized action.');
+            }
+
+            $review->delete();
+
+            return back()->with('success', 'Review deleted successfully!');
+        }
 }

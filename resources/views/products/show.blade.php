@@ -137,6 +137,75 @@
     </div>
 </div>
 
+<!-- ================= REVIEWS SECTION ================= -->
+<div class="mt-5">
+    <div class="glass-card">
+        <h2 class="section-title mb-4">Customer Reviews</h2>
+
+        @if(session('success'))
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                {{ session('success') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        @endif
+
+        <!-- Review Submission Form -->
+        <form action="{{ route('reviews.store', $product) }}" method="POST" class="p-4 rounded mb-5" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1);">
+            @csrf
+            <h5 class="mb-3 text-white">Leave a Review</h5>
+
+            <div class="mb-3">
+                <label for="rating" class="form-label text-muted">Rating</label>
+                <select name="rating" id="rating" class="form-select bg-dark text-white border-secondary" required>
+                    <option value="5">⭐⭐⭐⭐⭐ (5 / 5)</option>
+                    <option value="4">⭐⭐⭐⭐ (4 / 5)</option>
+                    <option value="3">⭐⭐⭐ (3 / 5)</option>
+                    <option value="2">⭐⭐ (2 / 5)</option>
+                    <option value="1">⭐ (1 / 5)</option>
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label for="comment" class="form-label text-muted">Your Feedback</label>
+                <textarea name="comment" id="comment" rows="3" class="form-control bg-dark text-white border-secondary" placeholder="What do you think of this component?" required></textarea>
+            </div>
+
+            <button type="submit" class="btn btn-fern py-2 px-4">Submit Review</button>
+        </form>
+
+        <!-- Reviews List -->
+       
+        <div class="reviews-list">
+            @forelse($product->reviews as $review)
+                <div class="p-3 mb-3 rounded" style="background: rgba(255, 255, 255, 0.03); border-bottom: 1px solid rgba(255, 255, 255, 0.08);">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <div>
+                            <strong class="text-white">{{ $review->user ? $review->user->name : 'Anonymous Guest' }}</strong>
+                            <span class="text-warning fw-bold fs-5 ms-2">{{ str_repeat('★', $review->rating) }}</span>
+                        </div>
+
+                        <!-- Delete Button: Only shown if the logged-in user owns this review -->
+                        @if(auth()->check() && auth()->id() === $review->user_id)
+                            <form action="{{ route('reviews.destroy', $review) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this review?');">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="btn btn-sm btn-outline-danger">
+                                    Delete
+                                </button>
+                            </form>
+                        @endif
+                    </div>
+
+                    <p class="mb-1 text-light">{{ $review->comment }}</p>
+                    <small class="text-muted">{{ $review->created_at->diffForHumans() }}</small>
+                </div>
+            @empty
+                <p class="text-muted italic mb-0">No reviews yet for this product. Be the first to leave one!</p>
+            @endforelse
+        </div>
+    </div>
+</div>
+
 @if($relatedProducts->count() > 0)
     <div class="mt-5">
         <h2 class="section-title mb-4">Related Components</h2>
