@@ -30,6 +30,9 @@
                         <a href="/builder" class="nav-link">PC Builder</a>
                     </li>
                     <li class="nav-item">
+                        <a href="{{ route('comparison.index') }}" class="nav-link">Compare</a>
+                    </li>
+                    <li class="nav-item">
                         <a href="/cart" class="nav-link">Cart</a>
                     </li>
                     <li class="nav-item">

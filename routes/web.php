@@ -3,6 +3,7 @@
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BuildController;
+use App\Http\Controllers\ComparisonController;
 use App\Http\Controllers\ProductController;
 use Illuminate\Support\Facades\Route;
 
@@ -14,7 +15,9 @@ Route::get('/', function () {
 // Product Routes
 Route::get('/products', [ProductController::class, 'index'])->name('products.index');
 Route::get('/products/{product:slug}', [ProductController::class, 'show'])->name('products.show');
-
+Route::get('/compare', [ComparisonController::class, 'index'])
+    ->name('comparison.index');
+    
 // PC Builder Routes
 Route::get('/builder', [BuildController::class, 'index'])->name('builder.index');
 Route::post('/builder/add/{product}', [BuildController::class, 'addComponent'])->name('builder.add');
