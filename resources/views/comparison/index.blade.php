@@ -3,6 +3,25 @@
 @section('title', 'Compare Components')
 
 @section('content')
+
+@php
+    $selectedProductIds = array_map('intval', request('products', []));
+
+    $specifications = [
+        'Brand' => 'brand',
+        'Model' => 'model',
+        'Price' => 'price',
+        'Stock' => 'stock',
+        'Socket Type' => 'socket_type',
+        'RAM Type' => 'ram_type',
+        'Form Factor' => 'form_factor',
+        'Wattage' => 'wattage',
+        'Storage Type' => 'storage_type',
+        'GPU Length' => 'gpu_length_mm',
+        'Case GPU Clearance' => 'case_clearance_mm',
+    ];
+@endphp
+
 <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-4">
     <div>
         <h1 class="section-title mb-2">Compare Components</h1>
@@ -12,10 +31,24 @@
         </p>
     </div>
 
-    <a href="{{ route('comparison.index') }}" class="btn btn-soft">
-        Reset Comparison
-    </a>
+    <div class="d-flex gap-2">
+        @auth
+            <a href="{{ route('comparison.history') }}" class="btn btn-soft">
+                Comparison History
+            </a>
+        @endauth
+
+        <a href="{{ route('comparison.index') }}" class="btn btn-soft">
+            Reset Comparison
+        </a>
+    </div>
 </div>
+
+@if(session('success'))
+    <div class="alert alert-success">
+        {{ session('success') }}
+    </div>
+@endif
 
 @if($errors->any())
     <div class="alert alert-danger">
@@ -123,15 +156,7 @@
                                         name="products[]"
                                         value="{{ $product->id }}"
                                         id="product-{{ $product->id }}"
-                                        @checked(
-                                            in_array(
-                                                $product->id,
-                                                array_map(
-                                                    'intval',
-                                                    request('products', [])
-                                                )
-                                            )
-                                        )
+                                        @checked(in_array($product->id, $selectedProductIds))
                                     >
 
                                     <span class="form-check-label">
@@ -228,8 +253,8 @@
                                 <img
                                     src="{{ $product->image_url }}"
                                     alt="{{ $product->name }}"
-                                    style="width: 100px; height: 80px; object-fit: contain;"
                                     class="mb-2"
+                                    style="width: 100px; height: 80px; object-fit: contain;"
                                 >
 
                                 <div>{{ $product->name }}</div>
@@ -239,103 +264,31 @@
                 </thead>
 
                 <tbody>
-                    <tr>
-                        <th class="text-start">Brand</th>
+                    @foreach($specifications as $label => $field)
+                        <tr>
+                            <th class="text-start">{{ $label }}</th>
 
-                        @foreach($selectedProducts as $product)
-                            <td>{{ $product->brand->name }}</td>
-                        @endforeach
-                    </tr>
-
-                    <tr>
-                        <th class="text-start">Model</th>
-
-                        @foreach($selectedProducts as $product)
-                            <td>{{ $product->model ?? 'N/A' }}</td>
-                        @endforeach
-                    </tr>
-
-                    <tr>
-                        <th class="text-start">Price</th>
-
-                        @foreach($selectedProducts as $product)
-                            <td>
-                                <strong class="product-price">
-                                    {{ $product->formatted_price }}
-                                </strong>
-                            </td>
-                        @endforeach
-                    </tr>
-
-                    <tr>
-                        <th class="text-start">Stock</th>
-
-                        @foreach($selectedProducts as $product)
-                            <td>{{ $product->stock }}</td>
-                        @endforeach
-                    </tr>
-
-                    <tr>
-                        <th class="text-start">Socket Type</th>
-
-                        @foreach($selectedProducts as $product)
-                            <td>{{ $product->socket_type ?? 'N/A' }}</td>
-                        @endforeach
-                    </tr>
-
-                    <tr>
-                        <th class="text-start">RAM Type</th>
-
-                        @foreach($selectedProducts as $product)
-                            <td>{{ $product->ram_type ?? 'N/A' }}</td>
-                        @endforeach
-                    </tr>
-
-                    <tr>
-                        <th class="text-start">Form Factor</th>
-
-                        @foreach($selectedProducts as $product)
-                            <td>{{ $product->form_factor ?? 'N/A' }}</td>
-                        @endforeach
-                    </tr>
-
-                    <tr>
-                        <th class="text-start">Wattage</th>
-
-                        @foreach($selectedProducts as $product)
-                            <td>
-                                {{ $product->wattage ? $product->wattage . 'W' : 'N/A' }}
-                            </td>
-                        @endforeach
-                    </tr>
-
-                    <tr>
-                        <th class="text-start">Storage Type</th>
-
-                        @foreach($selectedProducts as $product)
-                            <td>{{ $product->storage_type ?? 'N/A' }}</td>
-                        @endforeach
-                    </tr>
-
-                    <tr>
-                        <th class="text-start">GPU Length</th>
-
-                        @foreach($selectedProducts as $product)
-                            <td>
-                                {{ $product->gpu_length_mm ? $product->gpu_length_mm . ' mm' : 'N/A' }}
-                            </td>
-                        @endforeach
-                    </tr>
-
-                    <tr>
-                        <th class="text-start">Case GPU Clearance</th>
-
-                        @foreach($selectedProducts as $product)
-                            <td>
-                                {{ $product->case_clearance_mm ? $product->case_clearance_mm . ' mm' : 'N/A' }}
-                            </td>
-                        @endforeach
-                    </tr>
+                            @foreach($selectedProducts as $product)
+                                <td>
+                                    @if($field === 'brand')
+                                        {{ $product->brand->name }}
+                                    @elseif($field === 'price')
+                                        <strong class="product-price">
+                                            {{ $product->formatted_price }}
+                                        </strong>
+                                    @elseif($field === 'wattage')
+                                        {{ $product->wattage ? $product->wattage . 'W' : 'N/A' }}
+                                    @elseif($field === 'gpu_length_mm')
+                                        {{ $product->gpu_length_mm ? $product->gpu_length_mm . ' mm' : 'N/A' }}
+                                    @elseif($field === 'case_clearance_mm')
+                                        {{ $product->case_clearance_mm ? $product->case_clearance_mm . ' mm' : 'N/A' }}
+                                    @else
+                                        {{ $product->$field ?? 'N/A' }}
+                                    @endif
+                                </td>
+                            @endforeach
+                        </tr>
+                    @endforeach
 
                     <tr>
                         <th class="text-start">Stock Status</th>
@@ -366,6 +319,50 @@
                 </tbody>
             </table>
         </div>
+
+        <hr class="border-secondary my-4">
+
+        @auth
+            <form method="POST" action="{{ route('comparison.save') }}">
+                @csrf
+
+                <input
+                    type="hidden"
+                    name="category_id"
+                    value="{{ $selectedCategory->id }}"
+                >
+
+                <input
+                    type="hidden"
+                    name="priority"
+                    value="{{ request('priority', 'balanced') }}"
+                >
+
+                @foreach($selectedProducts as $product)
+                    <input
+                        type="hidden"
+                        name="products[]"
+                        value="{{ $product->id }}"
+                    >
+                @endforeach
+
+                <div class="text-end">
+                    <button type="submit" class="btn btn-fern">
+                        Save Comparison
+                    </button>
+                </div>
+            </form>
+        @else
+            <div class="text-end">
+                <p class="empty-text mb-2">
+                    Log in to save this comparison.
+                </p>
+
+                <a href="{{ route('login') }}" class="btn btn-soft">
+                    Login
+                </a>
+            </div>
+        @endauth
     </div>
 @endif
 
@@ -382,7 +379,7 @@
             </div>
 
             <div class="col-md-9">
-                <span class="status-pill mb-3">
+                <span class="status-pill">
                     Recommended Component
                 </span>
 
@@ -408,4 +405,5 @@
         </div>
     </div>
 @endif
+
 @endsection

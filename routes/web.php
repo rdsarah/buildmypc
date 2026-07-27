@@ -17,6 +17,17 @@ Route::get('/products', [ProductController::class, 'index'])->name('products.ind
 Route::get('/products/{product:slug}', [ProductController::class, 'show'])->name('products.show');
 Route::get('/compare', [ComparisonController::class, 'index'])
     ->name('comparison.index');
+
+Route::middleware('auth')->group(function () {
+    Route::post('/compare/save', [ComparisonController::class, 'save'])
+        ->name('comparison.save');
+
+    Route::get('/comparison-history', [ComparisonController::class, 'history'])
+        ->name('comparison.history');
+
+    Route::delete('/comparison-history/{comparisonHistory}', [ComparisonController::class, 'destroy'])
+        ->name('comparison.destroy');
+});
     
 // PC Builder Routes
 Route::get('/builder', [BuildController::class, 'index'])->name('builder.index');

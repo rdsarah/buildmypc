@@ -5,7 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Category;
 use App\Models\Product;
 use Illuminate\Http\Request;
-
+use App\Models\ComparisonHistory;
+use Illuminate\Support\Facades\Auth;
 class ComparisonController extends Controller
 {
     public function index(Request $request)
@@ -108,12 +109,60 @@ class ComparisonController extends Controller
             }
         }
 
+        $selectedCategory = null;
+
+        if ($request->category) {
+            $selectedCategory = Category::where('slug', $request->category)->first();
+        }
+
         return view('comparison.index', compact(
             'categories',
             'products',
             'selectedProducts',
             'recommendedProduct',
-            'recommendationText'
+            'recommendationText',
+            'selectedCategory'
         ));
     }
+public function save(Request $request)
+{
+    $validated = $request->validate([
+        'category_id' => 'required|exists:categories,id',
+        'priority' => 'required|string',
+        'products' => 'required|array|min:2|max:3',
+        'products.*' => 'exists:products,id',
+    ]);
+
+    ComparisonHistory::create([
+        'user_id' => Auth::id(),
+        'category_id' => $validated['category_id'],
+        'priority' => $validated['priority'],
+        'product_ids' => $validated['products'],
+    ]);
+
+    return redirect()
+        ->route('comparison.history')
+        ->with('success', 'Comparison saved successfully.');
+}
+
+public function history()
+{
+    $comparisons = ComparisonHistory::where('user_id', Auth::id())
+        ->with('category')
+        ->latest()
+        ->get();
+
+    return view('comparison.history', compact('comparisons'));
+}
+
+public function destroy(ComparisonHistory $comparisonHistory)
+{
+    if ($comparisonHistory->user_id != Auth::id()) {
+        abort(403);
+    }
+
+    $comparisonHistory->delete();
+
+    return back()->with('success', 'Comparison deleted successfully.');
+}    
 }
