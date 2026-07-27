@@ -6,6 +6,7 @@ use App\Http\Controllers\BuildController;
 use App\Http\Controllers\ComparisonController;
 use App\Http\Controllers\ProductController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\TrendingController;
 
 // Home Route
 Route::get('/', function () {
@@ -27,6 +28,8 @@ Route::middleware('auth')->group(function () {
 
     Route::delete('/comparison-history/{comparisonHistory}', [ComparisonController::class, 'destroy'])
         ->name('comparison.destroy');
+    Route::get('/trending', [TrendingController::class, 'index'])
+    ->name('trending.index');
 });
     
 // PC Builder Routes

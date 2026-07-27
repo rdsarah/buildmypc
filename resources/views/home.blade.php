@@ -67,5 +67,30 @@
             </a>
         </div>
     </div>
+    <div class="mt-4">
+    <a href="{{ route('trending.index') }}" class="feature-card-link">
+        <div class="glass-card trending-poster">
+            <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+                <div class="d-flex align-items-start gap-3">
+                    <div class="icon-box pink">↗</div>
+
+                    <div>
+                        <h5 class="mb-2">TRENDING DASHBOARD</h5>
+                        <p class="mb-0">
+                            Explore the most popular PC components, category leaders,
+                            trending brands, and recent platform activity.
+                        </p>
+                    </div>
+                </div>
+
+                <div>
+                    <span class="btn btn-fern">
+                        View Trends
+                    </span>
+                </div>
+            </div>
+        </div>
+    </a>
+</div>
 </section>
 @endsection
