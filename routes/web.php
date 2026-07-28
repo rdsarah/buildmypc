@@ -7,6 +7,7 @@ use App\Http\Controllers\ComparisonController;
 use App\Http\Controllers\ProductController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\TrendingController;
+use App\Http\Controllers\PaymentController;
 
 // Home Route
 Route::get('/', function () {
@@ -86,3 +87,10 @@ Route::post('/builder/save', [BuildController::class, 'store'])->name('builder.s
 Route::delete('/gallery/{id}', [BuildController::class, 'destroy'])->name('builder.destroy');
 Route::get('/gallery/{id}/edit', [BuildController::class, 'edit'])->name('builder.edit');
 Route::post('/gallery/{id}/add-to-cart', [BuildController::class, 'addToCart'])->name('builder.addToCart');
+
+
+// Stripe Payment Routes
+Route::get('/checkout/stripe', [PaymentController::class, 'showCheckout'])->name('checkout.stripe');
+Route::post('/checkout/create-session', [PaymentController::class, 'createSession'])->name('checkout.session');
+Route::get('/checkout/success', [PaymentController::class, 'success'])->name('checkout.success');
+Route::get('/checkout/cancel', [PaymentController::class, 'cancel'])->name('checkout.cancel');
