@@ -3,8 +3,10 @@
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BuildController;
+use App\Http\Controllers\ComparisonController;
 use App\Http\Controllers\ProductController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\TrendingController;
 use App\Http\Controllers\PaymentController;
 
 // Home Route
@@ -15,7 +17,22 @@ Route::get('/', function () {
 // Product Routes
 Route::get('/products', [ProductController::class, 'index'])->name('products.index');
 Route::get('/products/{product:slug}', [ProductController::class, 'show'])->name('products.show');
+Route::get('/compare', [ComparisonController::class, 'index'])
+    ->name('comparison.index');
 
+Route::middleware('auth')->group(function () {
+    Route::post('/compare/save', [ComparisonController::class, 'save'])
+        ->name('comparison.save');
+
+    Route::get('/comparison-history', [ComparisonController::class, 'history'])
+        ->name('comparison.history');
+
+    Route::delete('/comparison-history/{comparisonHistory}', [ComparisonController::class, 'destroy'])
+        ->name('comparison.destroy');
+    Route::get('/trending', [TrendingController::class, 'index'])
+    ->name('trending.index');
+});
+    
 // PC Builder Routes
 Route::get('/builder', [BuildController::class, 'index'])->name('builder.index');
 Route::post('/builder/add/{product}', [BuildController::class, 'addComponent'])->name('builder.add');
