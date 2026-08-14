@@ -12,7 +12,7 @@ class BuildController extends Controller
     public function index()
     {
         $build = session()->get('active_build', []);
-        
+
         $selectedProducts = Product::with(['category', 'brand'])
             ->whereIn('id', array_values($build))
             ->get()
@@ -21,49 +21,137 @@ class BuildController extends Controller
         $totalPrice = $selectedProducts->sum('price');
         $totalWattage = $selectedProducts->sum('wattage');
 
-        // Calculate Compatibility Warnings
+        // --------------------------------------------------
+        // FEATURE 3: BUILD COMPLETENESS VALIDATION
+        // --------------------------------------------------
+
+        $requiredComponents = [
+            'CPU',
+            'Motherboard',
+            'RAM',
+            'GPU',
+            'Storage',
+            'PSU',
+            'Casing',
+        ];
+
+        $missingComponents = [];
+
+        foreach ($requiredComponents as $component) {
+            if (!$selectedProducts->has($component)) {
+                $missingComponents[] = $component;
+            }
+        }
+
+        $isBuildComplete = empty($missingComponents);
+
+        // --------------------------------------------------
+        // FEATURE 4: HARDWARE COMPATIBILITY CHECKING
+        // --------------------------------------------------
+
         $warnings = [];
 
-        $cpu = $selectedProducts->get('CPU');
-        $mobo = $selectedProducts->get('Motherboard');
-        $ram = $selectedProducts->get('RAM');
-        $gpu = $selectedProducts->get('GPU');
-        $casing = $selectedProducts->get('Casing');
-        $psu = $selectedProducts->get('PSU');
+        // Initialize variables so the view always receives them
+        $cpu = null;
+        $mobo = null;
+        $ram = null;
+        $gpu = null;
+        $casing = null;
+        $psu = null;
 
-        // 1. CPU & Motherboard Socket Check
-        if ($cpu && $mobo && $cpu->socket_type && $mobo->socket_type) {
-            if (strtolower($cpu->socket_type) !== strtolower($mobo->socket_type)) {
-                $warnings[] = "Socket Mismatch: The selected CPU ({$cpu->name}) has socket type '{$cpu->socket_type}', but the Motherboard ({$mobo->name}) has socket '{$mobo->socket_type}'.";
+        // Only check compatibility when ALL required
+        // component types have been selected.
+        if ($isBuildComplete) {
+
+            $cpu = $selectedProducts->get('CPU');
+            $mobo = $selectedProducts->get('Motherboard');
+            $ram = $selectedProducts->get('RAM');
+            $gpu = $selectedProducts->get('GPU');
+            $casing = $selectedProducts->get('Casing');
+            $psu = $selectedProducts->get('PSU');
+
+            // 1. CPU + Motherboard Socket
+            if ($cpu->socket_type && $mobo->socket_type) {
+
+                if (strtolower($cpu->socket_type) !== strtolower($mobo->socket_type)) {
+
+                    $warnings[] = [
+                        'type' => 'CPU / Motherboard',
+                        'title' => 'Socket Mismatch',
+                        'details' => "The CPU uses {$cpu->socket_type}, while the motherboard uses {$mobo->socket_type}.",
+                        'cpu_socket' => $cpu->socket_type,
+                        'motherboard_socket' => $mobo->socket_type,
+                    ];
+                }
             }
-        }
 
-        // 2. Motherboard & RAM Type Check
-        if ($mobo && $ram && $mobo->ram_type && $ram->ram_type) {
-            if (strtolower($mobo->ram_type) !== strtolower($ram->ram_type)) {
-                $warnings[] = "RAM Generation Mismatch: The selected Motherboard ({$mobo->name}) supports {$mobo->ram_type} RAM, but the RAM ({$ram->name}) is {$ram->ram_type}.";
+            // 2. Motherboard + RAM
+            if ($mobo->ram_type && $ram->ram_type) {
+
+                if (strtolower($mobo->ram_type) !== strtolower($ram->ram_type)) {
+
+                    $warnings[] = [
+                        'type' => 'Motherboard / RAM',
+                        'title' => 'RAM Generation Mismatch',
+                        'details' => "The motherboard supports {$mobo->ram_type}, but the selected RAM is {$ram->ram_type}.",
+                        'motherboard_ram' => $mobo->ram_type,
+                        'ram_type' => $ram->ram_type,
+                    ];
+                }
             }
-        }
 
-        // 3. PSU Wattage Check
-        if ($psu && $psu->wattage && $totalWattage) {
-            $requiredWattage = $totalWattage - ($psu->wattage); // PSU is already in total
-            $safePSULevel = $requiredWattage + 50; // 50W safety margin
+            // 3. PSU Wattage
+            $requiredWattage = $totalWattage - $psu->wattage;
+            $safePSULevel = $requiredWattage + 50;
+
             if ($psu->wattage < $safePSULevel) {
-                $warnings[] = "PSU Wattage Alert: Total estimated wattage is {$requiredWattage}W. The selected PSU ({$psu->name}) delivers {$psu->wattage}W, which doesn't meet the safe recommended minimum of {$safePSULevel}W.";
+
+                $warnings[] = [
+                    'type' => 'PSU / Build',
+                    'title' => 'Insufficient PSU Wattage',
+                    'details' => "The build requires approximately {$requiredWattage}W. A safer recommended minimum is {$safePSULevel}W.",
+                    'required_wattage' => $requiredWattage,
+                    'psu_wattage' => $psu->wattage,
+                ];
+            }
+
+            // 4. GPU + Casing Clearance
+            if ($gpu->gpu_length_mm && $casing->case_clearance_mm) {
+
+                if ($gpu->gpu_length_mm > $casing->case_clearance_mm) {
+
+                    $warnings[] = [
+                        'type' => 'GPU / Casing',
+                        'title' => 'GPU Too Long',
+                        'details' => "The GPU is {$gpu->gpu_length_mm}mm long, but the casing supports GPUs up to {$casing->case_clearance_mm}mm.",
+                        'gpu_length' => $gpu->gpu_length_mm,
+                        'case_clearance' => $casing->case_clearance_mm,
+                    ];
+                }
             }
         }
 
-        // 4. GPU Length & Casing Clearance Check
-        if ($gpu && $casing && $gpu->gpu_length_mm && $casing->case_clearance_mm) {
-            if ($gpu->gpu_length_mm > $casing->case_clearance_mm) {
-                $warnings[] = "Casing Clearance Warning: The GPU ({$gpu->name}) is {$gpu->gpu_length_mm}mm long, but the Casing ({$casing->name}) only has clearance for up to {$casing->case_clearance_mm}mm GPU.";
-            }
-        }
+        // --------------------------------------------------
+        // BUILD TEMPLATES
+        // --------------------------------------------------
 
         $templates = BuildTemplate::with('products.category')->get();
 
-        return view('builder.index', compact('selectedProducts', 'totalPrice', 'totalWattage', 'warnings', 'templates'));
+        return view('builder.index', compact(
+            'selectedProducts',
+            'totalPrice',
+            'totalWattage',
+            'warnings',
+            'templates',
+            'missingComponents',
+            'isBuildComplete',
+            'cpu',
+            'mobo',
+            'ram',
+            'gpu',
+            'casing',
+            'psu'
+        ));
     }
 
     public function addComponent(Request $request, Product $product)
