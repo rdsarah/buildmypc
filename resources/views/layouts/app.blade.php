@@ -38,6 +38,10 @@
                     <li class="nav-item">
                         <a href="/orders" class="nav-link">Orders</a>
                     </li>
+                    
+                    <li class="nav-item">
+                        <a href="{{ route('blogs.index') }}" class="nav-link">Blogs</a>
+                    </li>
 
                     <!-- Authentication Action Group -->
                     @if(auth()->check())

@@ -8,6 +8,8 @@ use App\Http\Controllers\ProductController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\TrendingController;
 use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\BlogController;
+use App\Http\Controllers\CommentController;
 
 // Home Route
 Route::get('/', function () {
@@ -94,3 +96,31 @@ Route::get('/checkout/stripe', [PaymentController::class, 'showCheckout'])->name
 Route::post('/checkout/create-session', [PaymentController::class, 'createSession'])->name('checkout.session');
 Route::get('/checkout/success', [PaymentController::class, 'success'])->name('checkout.success');
 Route::get('/checkout/cancel', [PaymentController::class, 'cancel'])->name('checkout.cancel');
+
+
+
+// Community Blog Routes
+
+Route::get('/blogs', [BlogController::class, 'index'])
+    ->name('blogs.index');
+
+Route::middleware('auth')->group(function () {
+    Route::get('/blogs/create', [BlogController::class, 'create'])
+        ->name('blogs.create');
+
+    Route::post('/blogs', [BlogController::class, 'store'])
+        ->name('blogs.store');
+});
+
+Route::get('/blogs/{blog}', [BlogController::class, 'show'])
+    ->name('blogs.show');
+
+
+// Community Blog Comment Routes
+Route::middleware('auth')->group(function () {
+    Route::post('/blogs/{blog}/comments', [CommentController::class, 'store'])
+        ->name('comments.store');
+
+    Route::post('/comments/{comment}/reply', [CommentController::class, 'reply'])
+        ->name('comments.reply');
+});
