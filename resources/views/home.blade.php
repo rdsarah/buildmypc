@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
+
 <section class="hero-card text-center">
     <div class="hero-content">
         <div class="hero-badge mx-auto">
@@ -27,10 +28,13 @@
 <section class="mt-5">
     <div class="text-center mb-4">
         <h2 class="section-title">What BuildMyPC helps with</h2>
-        <p class="section-subtitle">A simple workflow for choosing parts and avoiding incompatible builds.</p>
+        <p class="section-subtitle">
+            A simple workflow for choosing parts and avoiding incompatible builds.
+        </p>
     </div>
 
     <div class="row g-4">
+
         <div class="col-md-4">
             <a href="{{ route('products.index') }}" class="feature-card-link">
                 <div class="glass-card h-100">
@@ -66,31 +70,65 @@
                 </div>
             </a>
         </div>
+
     </div>
+
     <div class="mt-4">
-    <a href="{{ route('trending.index') }}" class="feature-card-link">
-        <div class="glass-card trending-poster">
-            <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
-                <div class="d-flex align-items-start gap-3">
-                    <div class="icon-box pink">↗</div>
+        <a href="{{ route('trending.index') }}" class="feature-card-link">
+            <div class="glass-card trending-poster">
+                <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+
+                    <div class="d-flex align-items-start gap-3">
+                        <div class="icon-box pink">↗</div>
+
+                        <div>
+                            <h5 class="mb-2">TRENDING DASHBOARD</h5>
+                            <p class="mb-0">
+                                Explore the most popular PC components, category leaders,
+                                trending brands, and recent platform activity.
+                            </p>
+                        </div>
+                    </div>
 
                     <div>
-                        <h5 class="mb-2">TRENDING DASHBOARD</h5>
-                        <p class="mb-0">
-                            Explore the most popular PC components, category leaders,
-                            trending brands, and recent platform activity.
-                        </p>
+                        <span class="btn btn-fern">
+                            View Trends
+                        </span>
                     </div>
-                </div>
 
-                <div>
-                    <span class="btn btn-fern">
-                        View Trends
-                    </span>
                 </div>
             </div>
-        </div>
-    </a>
-</div>
+        </a>
+    </div>
+
+    <div class="mt-4">
+        <a href="{{ route('blogs.index') }}" class="feature-card-link">
+            <div class="glass-card trending-poster">
+                <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+
+                    <div class="d-flex align-items-start gap-3">
+                        <div class="icon-box blue">✎</div>
+
+                        <div>
+                            <h5 class="mb-2">COMMUNITY BLOGS</h5>
+                            <p class="mb-0">
+                                Share your PC experiences, setups, ideas, and discussions
+                                with the BuildMyPC community.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div>
+                        <span class="btn btn-fern">
+                            Explore Blogs
+                        </span>
+                    </div>
+
+                </div>
+            </div>
+        </a>
+    </div>
+
 </section>
+
 @endsection
