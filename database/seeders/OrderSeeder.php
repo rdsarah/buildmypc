@@ -20,22 +20,22 @@ class OrderSeeder extends Seeder
         $ordersData = [
             [
                 'customer_name' => 'Fahim Rahman',
-                'customer_email' => 'fahim@example.com',
+                'customer_email' => 'zamanfaiza1923@gmail.com',
                 'status' => 'pending',
             ],
             [
                 'customer_name' => 'Anika Tabassum',
-                'customer_email' => 'anika@example.com',
+                'customer_email' => 'zamanfaiza1923@gmail.com',
                 'status' => 'processing',
             ],
             [
                 'customer_name' => 'Tanvir Islam',
-                'customer_email' => 'tanvir@example.com',
+                'customer_email' => 'zamanfaiza1923@gmail.com',
                 'status' => 'shipped',
             ],
             [
                 'customer_name' => 'Sadia Afrin',
-                'customer_email' => 'sadia@example.com',
+                'customer_email' => 'zamanfaiza1923@gmail.com',
                 'status' => 'delivered',
             ],
         ];

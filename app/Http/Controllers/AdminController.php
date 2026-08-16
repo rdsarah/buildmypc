@@ -70,6 +70,9 @@ class AdminController extends Controller
 
         $order->update($validated);
 
+        \Illuminate\Support\Facades\Notification::route('mail', $order->customer_email)
+            ->notify(new \App\Notifications\OrderStatusChanged($order));
+
         return redirect()->back()->with('success', "Order #{$order->id} status updated to '{$request->status}'.");
     }
 
