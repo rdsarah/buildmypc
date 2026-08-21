@@ -1,3 +1,17 @@
+# BuildMyPC
+
+## CSE470: Software Engineering
+
+### Group Members
+
+| Name | Student ID |
+|------|------------|
+| Umar Ahmed Salah | 23301030 |
+| Md. Foysal Ferdous | 23201344 |
+| Faiza Zaman | 22201305 |
+| Radita Sarah Khan | 23301403 |
+
+---
 <p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
 
 <p align="center">
