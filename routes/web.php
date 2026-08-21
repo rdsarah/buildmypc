@@ -13,7 +13,7 @@ use App\Http\Controllers\CommentController;
 use App\Http\Controllers\WishlistController;
 use App\Http\Controllers\ProductAlertController;
 use App\Http\Controllers\OrderController;
-
+use App\Http\Controllers\AnalyticsController;
 // Home Route
 Route::get('/', function () {
     return view('home');
@@ -127,7 +127,7 @@ Route::middleware('auth')->group(function () {
         ->name('comments.reply');
 });
 
-// Wishlist & Product Alert Routes
+// Wishlist , Product Alert, personal dashboard routes
 Route::middleware('auth')->group(function () {
 
     Route::get('/wishlist', [WishlistController::class, 'index'])
@@ -147,4 +147,13 @@ Route::middleware('auth')->group(function () {
 
     Route::post('/product-alerts/read-all', [ProductAlertController::class, 'markAllAsRead'])
         ->name('product-alerts.readAll');
+    
+    Route::get('/analytics', [AnalyticsController::class, 'index'])
+        ->name('analytics.index');
+        
+    Route::get('/analytics/pdf', [AnalyticsController::class, 'downloadPdf'])
+    ->name('analytics.pdf');
 });
+
+
+

@@ -58,7 +58,13 @@
                                 </span>
                             @endif
                         </a>
+                        
                     </li>
+                @endif
+                @if(auth()->check())
+                        <li class="nav-item">
+                            <a href="{{ route('analytics.index') }}" class="nav-link">Analytics</a>
+                        </li>
                 @endif  
                     <li class="nav-item">
                         <a href="/orders" class="nav-link">Orders</a>
