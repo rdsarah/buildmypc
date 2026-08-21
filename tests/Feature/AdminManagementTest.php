@@ -6,6 +6,8 @@ use App\Models\Brand;
 use App\Models\Category;
 use App\Models\Order;
 use App\Models\Product;
+use App\Notifications\OrderStatusChanged;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -67,6 +69,8 @@ class AdminManagementTest extends TestCase
 
     public function test_admin_can_update_order_status(): void
     {
+        Notification::fake();
+
         $response = $this->post(route('admin.orders.updateStatus', $this->order->id), [
             'status' => 'processing',
         ]);
@@ -75,5 +79,37 @@ class AdminManagementTest extends TestCase
         $this->order->refresh();
 
         $this->assertEquals('processing', $this->order->status);
+
+        Notification::assertSentOnDemand(
+            OrderStatusChanged::class,
+            function (OrderStatusChanged $notification, array $channels, $notifiable) {
+                return $notifiable->routes['mail'] === 'test@example.com' &&
+                       $notification->order->id === $this->order->id;
+            }
+        );
+    }
+
+    public function test_admin_status_update_sends_shipped_notification(): void
+    {
+        Notification::fake();
+
+        $response = $this->post(route('admin.orders.updateStatus', $this->order->id), [
+            'status' => 'shipped',
+        ]);
+
+        $response->assertRedirect();
+        $this->order->refresh();
+
+        $this->assertEquals('shipped', $this->order->status);
+
+        Notification::assertSentOnDemand(
+            OrderStatusChanged::class,
+            function (OrderStatusChanged $notification, array $channels, $notifiable) {
+                $mailData = $notification->toMail($notifiable);
+                return $notifiable->routes['mail'] === 'test@example.com' &&
+                       $notification->order->status === 'shipped' &&
+                       in_array('Your order has been shipped!', $mailData->introLines);
+            }
+        );
     }
 }

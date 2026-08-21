@@ -12,6 +12,8 @@ use App\Http\Controllers\BlogController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\WishlistController;
 use App\Http\Controllers\ProductAlertController;
+use App\Http\Controllers\OrderController;
+
 // Home Route
 Route::get('/', function () {
     return view('home');
@@ -49,9 +51,8 @@ Route::get('/cart', function () {
     return view('cart.index');
 })->name('cart.index');
 
-Route::get('/orders', function () {
-    return view('orders.index');
-})->name('orders.index');
+Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
+Route::post('/orders/{order}/cancel', [OrderController::class, 'cancel'])->name('orders.cancel');
 
 // Admin Management Routes
 Route::get('/admin', [AdminController::class, 'dashboard'])->name('admin.dashboard');

@@ -27,21 +27,25 @@
     </div>
 @endif
 
-@if(count($selectedProducts) > 0)
-    @if(count($warnings) > 0)
-        <div class="warning-card mb-4">
-            <h5 class="fw-bold mb-2">⚠️ Compatibility Warnings Detected</h5>
-            <ul class="mb-0 ps-3">
-                @foreach($warnings as $warning)
-                    <li class="mb-1">{{ $warning }}</li>
-                @endforeach
-            </ul>
+{{-- FEATURE 3: BUILD COMPLETENESS VALIDATION --}}
+@if(count($selectedProducts) > 0 && !$isBuildComplete)
+    <div class="warning-card mb-4">
+        <h5 class="fw-bold mb-2">⚠️ Build Incomplete</h5>
+
+        <p class="mb-2">
+            Select all required component types before compatibility can be checked.
+        </p>
+
+        <div class="fw-bold text-white mb-2">
+            Missing components:
         </div>
-    @else
-        <div class="notice-card mb-4 text-success border-success" style="background: rgba(9, 219, 199, 0.05);">
-            ✅ All selected components are compatible.
-        </div>
-    @endif
+
+        <ul class="mb-0 ps-3">
+            @foreach($missingComponents as $missing)
+                <li class="mb-1">{{ $missing }}</li>
+            @endforeach
+        </ul>
+    </div>
 @endif
 
 <div class="row g-4">
@@ -110,11 +114,17 @@
                 <strong class="text-white">{{ $totalWattage }}W</strong>
             </div>
             <div class="mb-3">
-                <span class="empty-text">Compatibility:</span> 
+                <span class="empty-text">Build Status:</span>
+
                 @if(count($selectedProducts) == 0)
                     <span class="badge bg-secondary">Empty Build</span>
+
+                @elseif(!$isBuildComplete)
+                    <span class="badge bg-warning text-dark">Incomplete</span>
+
                 @elseif(count($warnings) > 0)
-                    <span class="badge bg-danger">Issues Found</span>
+                    <span class="badge bg-danger">Compatibility Issues</span>
+
                 @else
                     <span class="badge bg-success">Compatible</span>
                 @endif
@@ -127,6 +137,293 @@
                 </button>
             @endif
         </div>
+
+        {{-- FEATURE 4: HARDWARE COMPATIBILITY CHECK --}}
+        @if($isBuildComplete)
+            <div class="glass-card mb-4">
+
+                {{-- Header --}}
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold mb-0 text-uppercase">
+                        Compatibility Check
+                    </h5>
+
+                    @if(count($warnings) > 0)
+                        <span class="badge bg-danger">
+                            {{ count($warnings) }}
+                            Issue{{ count($warnings) > 1 ? 's' : '' }}
+                        </span>
+                    @else
+                        <span class="badge bg-success">
+                            Compatible
+                        </span>
+                    @endif
+                </div>
+
+                {{-- Compatibility Issues --}}
+                @if(count($warnings) > 0)
+
+                    @foreach($warnings as $warning)
+
+                        <div class="border rounded p-3 mb-3">
+
+                            {{-- Issue Header --}}
+                            <div class="d-flex align-items-start gap-3">
+
+                                <div class="text-danger fs-4">
+                                    ⚠️
+                                </div>
+
+                                <div class="flex-grow-1">
+
+                                    {{-- Components --}}
+                                    <div class="fw-bold text-white">
+                                        {{ $warning['type'] }}
+                                    </div>
+
+                                    {{-- Short Issue --}}
+                                    <div class="fw-bold text-danger mt-1">
+                                        {{ $warning['title'] }}
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+
+                            {{-- Relevant Specifications --}}
+                            @if($warning['type'] === 'CPU / Motherboard')
+
+                                <div class="mt-3">
+
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span class="text-white-50">
+                                            CPU Socket
+                                        </span>
+
+                                        <strong class="text-white">
+                                            {{ $warning['cpu_socket'] }}
+                                        </strong>
+                                    </div>
+
+                                    <div class="d-flex justify-content-between">
+                                        <span class="text-white-50">
+                                            Motherboard Socket
+                                        </span>
+
+                                        <strong class="text-white">
+                                            {{ $warning['motherboard_socket'] }}
+                                        </strong>
+                                    </div>
+
+                                </div>
+
+                            @elseif($warning['type'] === 'Motherboard / RAM')
+
+                                <div class="mt-3">
+
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span class="text-white-50">
+                                            Motherboard Supports
+                                        </span>
+
+                                        <strong class="text-white">
+                                            {{ $warning['motherboard_ram'] }}
+                                        </strong>
+                                    </div>
+
+                                    <div class="d-flex justify-content-between">
+                                        <span class="text-white-50">
+                                            Selected RAM
+                                        </span>
+
+                                        <strong class="text-white">
+                                            {{ $warning['ram_type'] }}
+                                        </strong>
+                                    </div>
+
+                                </div>
+
+                            @elseif($warning['type'] === 'PSU / Build')
+
+                                <div class="mt-3">
+
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span class="text-white-50">
+                                            Build Requirement
+                                        </span>
+
+                                        <strong class="text-white">
+                                            {{ $warning['required_wattage'] }}W
+                                        </strong>
+                                    </div>
+
+                                    <div class="d-flex justify-content-between">
+                                        <span class="text-white-50">
+                                            PSU Wattage
+                                        </span>
+
+                                        <strong class="text-white">
+                                            {{ $warning['psu_wattage'] }}W
+                                        </strong>
+                                    </div>
+
+                                </div>
+
+                            @elseif($warning['type'] === 'GPU / Casing')
+
+                                <div class="mt-3">
+
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span class="text-white-50">
+                                            GPU Length
+                                        </span>
+
+                                        <strong class="text-white">
+                                            {{ $warning['gpu_length'] }}mm
+                                        </strong>
+                                    </div>
+
+                                    <div class="d-flex justify-content-between">
+                                        <span class="text-white-50">
+                                            Case Clearance
+                                        </span>
+
+                                        <strong class="text-white">
+                                            {{ $warning['case_clearance'] }}mm
+                                        </strong>
+                                    </div>
+
+                                </div>
+
+                            @endif
+
+
+                            {{-- Details --}}
+                            <details class="mt-3">
+
+                                <summary class="text-white">
+                                    Details
+                                </summary>
+
+                                <p class="small text-white-50 mt-2 mb-0">
+                                    {{ $warning['details'] }}
+                                </p>
+
+                            </details>
+                            
+                            {{-- FEATURE 5: COMPATIBLE ALTERNATIVE SUGGESTIONS --}}
+                            @if(isset($alternatives[$warning['type']]) && $alternatives[$warning['type']]->count() > 0)
+
+                                <div class="mt-4">
+
+                                    <div class="fw-bold text-white mb-2">
+                                        Compatible Alternatives
+                                    </div>
+
+                                    <div class="small text-muted mb-3">
+                                        Replace the incompatible component with one of these compatible options.
+                                    </div>
+
+                                    @foreach($alternatives[$warning['type']] as $alternative)
+
+                                        <div class="border rounded p-3 mb-2">
+
+                                            <div class="d-flex justify-content-between align-items-start gap-3">
+
+                                                <div class="flex-grow-1">
+
+                                                    <div class="fw-bold text-white">
+                                                        {{ $alternative->name }}
+                                                    </div>
+
+                                                    <div class="small text-white-50 mt-1">
+                                                        {{ $alternative->brand?->name }}
+
+                                                        @if($alternative->model)
+                                                            • {{ $alternative->model }}
+                                                        @endif
+                                                    </div>
+
+                                                    <div class="small text-muted mt-1">
+
+                                                        @if($alternative->socket_type)
+                                                            Socket: {{ $alternative->socket_type }}
+                                                        @endif
+
+                                                        @if($alternative->ram_type)
+                                                            RAM: {{ $alternative->ram_type }}
+                                                        @endif
+
+                                                        @if($alternative->wattage)
+                                                            • {{ $alternative->wattage }}W
+                                                        @endif
+
+                                                        @if($alternative->case_clearance_mm)
+                                                            • Clearance: {{ $alternative->case_clearance_mm }}mm
+                                                        @endif
+
+                                                    </div>
+
+                                                </div>
+
+                                                <div class="text-end">
+
+                                                    <div class="product-price fw-bold mb-2">
+                                                        ৳{{ number_format($alternative->price, 0) }}
+                                                    </div>
+
+                                                    <form action="{{ route('builder.add', $alternative->id) }}" method="POST">
+                                                        @csrf
+
+                                                        <button type="submit" class="btn btn-sm btn-fern">
+                                                            Replace
+                                                        </button>
+                                                    </form>
+
+                                                </div>
+
+                                            </div>
+
+                                        </div>
+
+                                    @endforeach
+
+                                </div>
+
+                            @endif
+
+                        </div>
+
+                    @endforeach
+
+                @else
+
+                    {{-- No Issues --}}
+                    <div class="text-center py-3">
+
+                        <div class="text-success fs-2 mb-2">
+                            ✓
+                        </div>
+
+                        <div class="fw-bold text-white">
+                            All components are compatible
+                        </div>
+
+                        <div class="small text-muted mt-1">
+                            No hardware compatibility issues were detected.
+                        </div>
+
+                    </div>
+
+                @endif
+
+                <div class="small text-muted mt-2">
+                    ⓘ Compatibility is checked based on the components you selected.
+                </div>
+
+            </div>
+        @endif
 
         <!-- Budget-Based build suggestion -->
         <div class="glass-card">
