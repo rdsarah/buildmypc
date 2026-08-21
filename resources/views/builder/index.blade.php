@@ -311,6 +311,87 @@
                                 </p>
 
                             </details>
+                            
+                            {{-- FEATURE 5: COMPATIBLE ALTERNATIVE SUGGESTIONS --}}
+                            @if(isset($alternatives[$warning['type']]) && $alternatives[$warning['type']]->count() > 0)
+
+                                <div class="mt-4">
+
+                                    <div class="fw-bold text-white mb-2">
+                                        Compatible Alternatives
+                                    </div>
+
+                                    <div class="small text-muted mb-3">
+                                        Replace the incompatible component with one of these compatible options.
+                                    </div>
+
+                                    @foreach($alternatives[$warning['type']] as $alternative)
+
+                                        <div class="border rounded p-3 mb-2">
+
+                                            <div class="d-flex justify-content-between align-items-start gap-3">
+
+                                                <div class="flex-grow-1">
+
+                                                    <div class="fw-bold text-white">
+                                                        {{ $alternative->name }}
+                                                    </div>
+
+                                                    <div class="small text-white-50 mt-1">
+                                                        {{ $alternative->brand?->name }}
+
+                                                        @if($alternative->model)
+                                                            • {{ $alternative->model }}
+                                                        @endif
+                                                    </div>
+
+                                                    <div class="small text-muted mt-1">
+
+                                                        @if($alternative->socket_type)
+                                                            Socket: {{ $alternative->socket_type }}
+                                                        @endif
+
+                                                        @if($alternative->ram_type)
+                                                            RAM: {{ $alternative->ram_type }}
+                                                        @endif
+
+                                                        @if($alternative->wattage)
+                                                            • {{ $alternative->wattage }}W
+                                                        @endif
+
+                                                        @if($alternative->case_clearance_mm)
+                                                            • Clearance: {{ $alternative->case_clearance_mm }}mm
+                                                        @endif
+
+                                                    </div>
+
+                                                </div>
+
+                                                <div class="text-end">
+
+                                                    <div class="product-price fw-bold mb-2">
+                                                        ৳{{ number_format($alternative->price, 0) }}
+                                                    </div>
+
+                                                    <form action="{{ route('builder.add', $alternative->id) }}" method="POST">
+                                                        @csrf
+
+                                                        <button type="submit" class="btn btn-sm btn-fern">
+                                                            Replace
+                                                        </button>
+                                                    </form>
+
+                                                </div>
+
+                                            </div>
+
+                                        </div>
+
+                                    @endforeach
+
+                                </div>
+
+                            @endif
 
                         </div>
 

@@ -50,6 +50,7 @@ class BuildController extends Controller
         // --------------------------------------------------
 
         $warnings = [];
+        $alternatives = [];
 
         // Initialize variables so the view always receives them
         $cpu = null;
@@ -82,6 +83,20 @@ class BuildController extends Controller
                         'cpu_socket' => $cpu->socket_type,
                         'motherboard_socket' => $mobo->socket_type,
                     ];
+
+                    // FEATURE 5:
+                    // Find motherboards compatible with the selected CPU.
+                    $alternatives['CPU / Motherboard'] = Product::with(['category', 'brand'])
+                        ->whereHas('category', function ($query) {
+                            $query->where('name', 'Motherboard');
+                        })
+                        ->where('socket_type', $cpu->socket_type)
+                        ->where('is_active', true)
+                        ->where('stock', '>', 0)
+                        ->where('id', '!=', $mobo->id)
+                        ->orderBy('price', 'asc')
+                        ->take(5)
+                        ->get();
                 }
             }
 
@@ -97,6 +112,20 @@ class BuildController extends Controller
                         'motherboard_ram' => $mobo->ram_type,
                         'ram_type' => $ram->ram_type,
                     ];
+
+                    // FEATURE 5:
+                    // Find RAM compatible with the selected motherboard.
+                    $alternatives['Motherboard / RAM'] = Product::with(['category', 'brand'])
+                        ->whereHas('category', function ($query) {
+                            $query->where('name', 'RAM');
+                        })
+                        ->where('ram_type', $mobo->ram_type)
+                        ->where('is_active', true)
+                        ->where('stock', '>', 0)
+                        ->where('id', '!=', $ram->id)
+                        ->orderBy('price', 'asc')
+                        ->take(5)
+                        ->get();
                 }
             }
 
@@ -113,6 +142,20 @@ class BuildController extends Controller
                     'required_wattage' => $requiredWattage,
                     'psu_wattage' => $psu->wattage,
                 ];
+
+                // FEATURE 5:
+                // Find PSUs with enough wattage for the current build.
+                $alternatives['PSU / Build'] = Product::with(['category', 'brand'])
+                    ->whereHas('category', function ($query) {
+                        $query->where('name', 'PSU');
+                    })
+                    ->where('wattage', '>=', $safePSULevel)
+                    ->where('is_active', true)
+                    ->where('stock', '>', 0)
+                    ->where('id', '!=', $psu->id)
+                    ->orderBy('price', 'asc')
+                    ->take(5)
+                    ->get();
             }
 
             // 4. GPU + Casing Clearance
@@ -127,6 +170,20 @@ class BuildController extends Controller
                         'gpu_length' => $gpu->gpu_length_mm,
                         'case_clearance' => $casing->case_clearance_mm,
                     ];
+
+                    // FEATURE 5:
+                    // Find cases that can physically fit the selected GPU.
+                    $alternatives['GPU / Casing'] = Product::with(['category', 'brand'])
+                        ->whereHas('category', function ($query) {
+                            $query->where('name', 'Casing');
+                        })
+                        ->where('case_clearance_mm', '>=', $gpu->gpu_length_mm)
+                        ->where('is_active', true)
+                        ->where('stock', '>', 0)
+                        ->where('id', '!=', $casing->id)
+                        ->orderBy('price', 'asc')
+                        ->take(5)
+                        ->get();
                 }
             }
         }
@@ -150,7 +207,8 @@ class BuildController extends Controller
             'ram',
             'gpu',
             'casing',
-            'psu'
+            'psu',
+            'alternatives',
         ));
     }
 
