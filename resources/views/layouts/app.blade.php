@@ -35,6 +35,31 @@
                     <li class="nav-item">
                         <a href="/cart" class="nav-link">Cart</a>
                     </li>
+
+                @if(auth()->check())
+                    <li class="nav-item">
+                        <a href="{{ route('wishlist.index') }}" class="nav-link">Wishlist ♡</a>
+                    </li>
+                @endif
+                @if(auth()->check())
+                    <li class="nav-item">
+                        <a href="{{ route('product-alerts.index') }}" class="nav-link">
+                            🔔 Alerts
+
+                            @php
+                                $unreadAlerts = \App\Models\ProductAlert::where('user_id', auth()->id())
+                                    ->where('is_read', false)
+                                    ->count();
+                            @endphp
+
+                            @if($unreadAlerts > 0)
+                                <span class="badge bg-danger ms-1">
+                                    {{ $unreadAlerts }}
+                                </span>
+                            @endif
+                        </a>
+                    </li>
+                @endif  
                     <li class="nav-item">
                         <a href="/orders" class="nav-link">Orders</a>
                     </li>

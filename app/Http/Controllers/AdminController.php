@@ -7,6 +7,8 @@ use App\Models\Order;
 use App\Models\Product;
 use App\Models\User;
 use Illuminate\Http\Request;
+use App\Models\Wishlist;
+use App\Models\ProductAlert;
 
 class AdminController extends Controller
 {
@@ -57,9 +59,62 @@ class AdminController extends Controller
             'stock' => 'required|integer|min:0',
         ]);
 
+        // Store old values before updating
+        $oldPrice = $product->price;
+        $oldStock = $product->stock;
+
+        // Update product
         $product->update($validated);
 
-        return redirect()->back()->with('success', "Product '{$product->name}' updated successfully.");
+        // Detect relevant changes
+        $priceDropped = $product->price < $oldPrice;
+        $cameBackInStock = $oldStock <= 0 && $product->stock > 0;
+
+        // Create one alert if either event happened
+        if ($priceDropped || $cameBackInStock) {
+
+            $wishlists = Wishlist::where('product_id', $product->id)->get();
+
+            foreach ($wishlists as $wishlist) {
+
+                // Both stock and price changed
+                if ($priceDropped && $cameBackInStock) {
+
+                    $message = "{$product->name} is back in stock and its price has dropped to ৳"
+                        . number_format($product->price, 2) . ".";
+
+                    $type = 'back_in_stock_and_price_drop';
+
+                // Only price dropped
+                } elseif ($priceDropped) {
+
+                    $message = "{$product->name} price has dropped to ৳"
+                        . number_format($product->price, 2) . ".";
+
+                    $type = 'price_drop';
+
+                // Only came back in stock
+                } else {
+
+                    $message = "{$product->name} is back in stock.";
+
+                    $type = 'back_in_stock';
+                }
+
+                ProductAlert::create([
+                    'user_id' => $wishlist->user_id,
+                    'product_id' => $product->id,
+                    'type' => $type,
+                    'message' => $message,
+                    'is_read' => false,
+                ]);
+            }
+        }
+
+        return redirect()->back()->with(
+            'success',
+            "Product '{$product->name}' updated successfully."
+        );
     }
 
     public function updateOrderStatus(Request $request, Order $order)
