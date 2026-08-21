@@ -11,6 +11,10 @@
 | Faiza Zaman | 22201305 |
 | Radita Sarah Khan | 23301403 |
 
+### Project Documentation
+
+**SRS Document:** [View the SRS Document](https://docs.google.com/document/d/1u3LzOU4y7AYp1wKdOyIrrEG9prfW7ZKYZOeW992xn7Q/edit?tab=t.0#heading=h.ov6upitpr2ui)
+
 ---
 <p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
 
