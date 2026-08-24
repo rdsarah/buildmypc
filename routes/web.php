@@ -10,8 +10,10 @@ use App\Http\Controllers\TrendingController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\BlogController;
 use App\Http\Controllers\CommentController;
+use App\Http\Controllers\WishlistController;
+use App\Http\Controllers\ProductAlertController;
 use App\Http\Controllers\OrderController;
-
+use App\Http\Controllers\AnalyticsController;
 // Home Route
 Route::get('/', function () {
     return view('home');
@@ -124,3 +126,34 @@ Route::middleware('auth')->group(function () {
     Route::post('/comments/{comment}/reply', [CommentController::class, 'reply'])
         ->name('comments.reply');
 });
+
+// Wishlist , Product Alert, personal dashboard routes
+Route::middleware('auth')->group(function () {
+
+    Route::get('/wishlist', [WishlistController::class, 'index'])
+        ->name('wishlist.index');
+
+    Route::post('/wishlist/{product}', [WishlistController::class, 'store'])
+        ->name('wishlist.store');
+
+    Route::delete('/wishlist/{product}', [WishlistController::class, 'destroy'])
+        ->name('wishlist.destroy');
+
+    Route::get('/product-alerts', [ProductAlertController::class, 'index'])
+        ->name('product-alerts.index');
+
+    Route::post('/product-alerts/{alert}/read', [ProductAlertController::class, 'markAsRead'])
+        ->name('product-alerts.read');
+
+    Route::post('/product-alerts/read-all', [ProductAlertController::class, 'markAllAsRead'])
+        ->name('product-alerts.readAll');
+    
+    Route::get('/analytics', [AnalyticsController::class, 'index'])
+        ->name('analytics.index');
+        
+    Route::get('/analytics/pdf', [AnalyticsController::class, 'downloadPdf'])
+    ->name('analytics.pdf');
+});
+
+
+
