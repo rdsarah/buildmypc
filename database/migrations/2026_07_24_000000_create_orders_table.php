@@ -10,17 +10,21 @@ return new class extends Migration
     {
         Schema::create('orders', function (Blueprint $table) {
             $table->id();
-            $table->string('customer_name');
-            $table->string('customer_email');
+            $table->foreignId('user_id')->nullable()->constrained()->onDelete('cascade');
+            $table->string('order_number')->unique();
+            $table->string('customer_name')->nullable();
+            $table->string('customer_email')->nullable();
             $table->string('status')->default('pending'); // pending, processing, shipped, delivered, cancelled
-            $table->decimal('total_price', 10, 2);
+            $table->string('cancelled_by')->nullable();
+            $table->text('cancellation_reason')->nullable();
+            $table->decimal('total_amount', 10, 2)->default(0.00);
             $table->timestamps();
         });
 
         Schema::create('order_items', function (Blueprint $table) {
             $table->id();
             $table->foreignId('order_id')->constrained()->onDelete('cascade');
-            $table->foreignId('product_id')->constrained();
+            $table->foreignId('product_id')->constrained()->onDelete('cascade');
             $table->integer('quantity');
             $table->decimal('price', 10, 2);
             $table->timestamps();
