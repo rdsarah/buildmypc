@@ -3,13 +3,13 @@
 @section('content')
 <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4">
     <div>
-        <h2 class="section-title mb-1">Orders</h2>
+        <h2 class="section-title mb-1">Orders & Order Tracking</h2>
         <p class="section-subtitle mb-0">
-            Track placed orders and delivery progress.
+            Track your placed orders, view component details, and check real-time delivery status.
         </p>
     </div>
 
-    <a href="/cart" class="btn btn-soft mt-3 mt-md-0">View Cart</a>
+    <a href="{{ route('cart.index') ?? '/cart' }}" class="btn btn-soft mt-3 mt-md-0">🛒 View Cart</a>
 </div>
 
 @if(session('success'))
