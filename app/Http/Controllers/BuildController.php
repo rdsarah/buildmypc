@@ -327,11 +327,26 @@ class BuildController extends Controller
 
     public function gallery()
     {
-        // Fetch public/saved build templates with their products 
-        $builds = BuildTemplate::with('products')->latest()->paginate(12);
+        $currentUserId = auth()->id();
+
+        // Safe query structure that handles guest & authenticated conditions without scoping issues
+        $builds = BuildTemplate::with(['user', 'products.category'])
+            ->where(function ($query) use ($currentUserId) {
+                $query->whereNull('user_id')
+                      ->orWhereHas('user', function ($q) {
+                          $q->where('role', 'admin');
+                      });
+
+                if ($currentUserId) {
+                    $query->orWhere('user_id', $currentUserId);
+                }
+            })
+            ->latest()
+            ->paginate(12);
 
         return view('builder.gallery', compact('builds'));
     }
+
     public function store(Request $request)
     {
         // 1. Validate incoming build data
@@ -344,7 +359,7 @@ class BuildController extends Controller
 
         // 2. Create the saved build record
         $build = BuildTemplate::create([
-            'user_id' => auth()->id() ?? null, // optional: link to logged-in user
+            'user_id' => auth()->id() ?? null,
             'name' => $validated['name'],
             'description' => $validated['description'] ?? null,
             'target_use' => 'Custom',
@@ -355,7 +370,7 @@ class BuildController extends Controller
 
         return redirect()->route('gallery.index')->with('success', 'Build saved successfully!');
     }
-    // for deleting build
+
     public function destroy($id)
     {
         $build = BuildTemplate::findOrFail($id);
@@ -374,14 +389,15 @@ class BuildController extends Controller
     {
         $build = BuildTemplate::with('products.category')->findOrFail($id);
 
-        // Load build components into session
+        // Standardized session key to 'active_build' so builder recognizes it
         $selected = [];
         foreach ($build->products as $product) {
-            $type = $product->category?->slug ?? strtolower($product->category?->name ?? 'other');
-            $selected[strtoupper($type)] = $product->id;
+            if ($product->category) {
+                $selected[$product->category->name] = $product->id;
+            }
         }
 
-        session(['builder_selected' => $selected]);
+        session(['active_build' => $selected]);
 
         return redirect()->route('builder.index')->with('success', "Loaded '{$build->name}' into builder for editing!");
     }

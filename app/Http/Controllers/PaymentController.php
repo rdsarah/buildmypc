@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Order;
+use App\Models\OrderItem;
 use Illuminate\Http\Request;
 use Stripe\Stripe;
 use Stripe\Checkout\Session;
@@ -9,18 +11,32 @@ use Stripe\Checkout\Session;
 class PaymentController extends Controller
 {
     /**
-     * Display the Standalone Stripe Checkout Test Page
+     * Display Stripe checkout page.
      */
     public function showCheckout()
     {
-        return view('cart.stripe', [
+        $cart = session()->get('cart', []);
+
+        if (empty($cart)) {
+            return redirect()->route('cart.index')->with('error', 'Your cart is empty.');
+        }
+
+        $total = 0;
+        foreach ($cart as $item) {
+            $price = $item['price'] ?? 0;
+            $qty   = $item['quantity'] ?? 1;
+            $total += $price * $qty;
+        }
+
+        return view('checkout.stripe', [
             'stripeKey' => config('services.stripe.key'),
-            'total' => 999.00,
+            'cart'      => $cart,
+            'total'     => $total,
         ]);
     }
 
     /**
-     * Create Stripe Checkout Session
+     * Create Stripe Checkout Session dynamically.
      */
     public function createSession(Request $request)
     {
@@ -28,42 +44,94 @@ class PaymentController extends Controller
             $secretKey = config('services.stripe.secret');
 
             if (!$secretKey) {
-                return response()->json(['error' => 'Stripe Secret Key is missing from .env or config/services.php'], 500);
+                return response()->json(['error' => 'Stripe Secret Key is missing.'], 500);
+            }
+
+            $cart = session()->get('cart', []);
+
+            if (empty($cart)) {
+                return response()->json(['error' => 'Cart is empty.'], 400);
             }
 
             Stripe::setApiKey($secretKey);
 
+            $lineItems = [];
+            $bdtToUsdRate = 120; // 1 USD = 120 BDT
+
+            foreach ($cart as $item) {
+                $name     = $item['name'] ?? 'PC Component';
+                $priceBdt = (float) ($item['price'] ?? 0);
+                $qty      = (int) ($item['quantity'] ?? 1);
+
+                // Convert BDT price to USD
+                $priceUsd = $priceBdt / $bdtToUsdRate;
+
+                $lineItems[] = [
+                    'price_data' => [
+                        'currency'     => 'usd',
+                        'product_data' => [
+                            'name' => $name . ' (৳' . number_format($priceBdt, 0) . ')',
+                        ],
+                        'unit_amount'  => (int) round($priceUsd * 100), // convert to USD cents
+                    ],
+                    'quantity'   => $qty,
+                ];
+            }
+
             $session = Session::create([
                 'payment_method_types' => ['card'],
-                'line_items' => [[
-                    'price_data' => [
-                        'currency' => 'usd',
-                        'product_data' => [
-                            'name' => 'Custom Gaming PC Build (Dummy Test)',
-                        ],
-                        'unit_amount' => 99900, // $999.00
-                    ],
-                    'quantity' => 1,
-                ]],
-                'mode' => 'payment',
-                'success_url' => route('checkout.success'),
-                'cancel_url' => route('checkout.cancel'),
+                'line_items'           => $lineItems,
+                'mode'                 => 'payment',
+                'success_url'          => route('checkout.success'),
+                'cancel_url'           => route('checkout.cancel'),
             ]);
 
             return response()->json(['id' => $session->id]);
 
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
-
+    /**
+     * Handle payment success.
+     */
     public function success()
     {
-        return view('orders.index')->with('success', 'Payment successful! Your test order was placed.');
+        $cart = session()->get('cart', []);
+
+        if (!empty($cart)) {
+            $totalAmount = 0;
+            foreach ($cart as $item) {
+                $totalAmount += ($item['price'] ?? 0) * ($item['quantity'] ?? 1);
+            }
+
+            $order = Order::create([
+                'user_id'      => auth()->id(),
+                'order_number' => 'ORD-' . strtoupper(uniqid()),
+                'total_amount' => $totalAmount,
+                'status'       => 'processing',
+            ]);
+
+            foreach ($cart as $id => $item) {
+                OrderItem::create([
+                    'order_id'   => $order->id,
+                    'product_id' => $id,
+                    'quantity'   => $item['quantity'] ?? 1,
+                    'price'      => $item['price'] ?? 0,
+                ]);
+            }
+
+            session()->forget('cart');
+        }
+
+        return redirect()->route('orders.index')->with('success', 'Payment successful! Order placed.');
     }
 
+    /**
+     * Handle payment cancellation.
+     */
     public function cancel()
     {
-        return redirect()->route('checkout.stripe')->with('error', 'Payment was canceled.');
+        return redirect()->route('cart.index')->with('error', 'Payment was canceled.');
     }
 }

@@ -10,6 +10,7 @@ return new class extends Migration
     {
         Schema::create('build_templates', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('user_id')->nullable()->constrained()->onDelete('cascade');
             $table->string('name');
             $table->text('description')->nullable();
             $table->string('target_use'); // gaming, editing, office
