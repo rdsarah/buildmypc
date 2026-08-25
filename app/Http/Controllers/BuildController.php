@@ -21,9 +21,7 @@ class BuildController extends Controller
         $totalPrice = $selectedProducts->sum('price');
         $totalWattage = $selectedProducts->sum('wattage');
 
-        // --------------------------------------------------
         // FEATURE 3: BUILD COMPLETENESS VALIDATION
-        // --------------------------------------------------
 
         $requiredComponents = [
             'CPU',
@@ -45,14 +43,13 @@ class BuildController extends Controller
 
         $isBuildComplete = empty($missingComponents);
 
-        // --------------------------------------------------
-        // FEATURE 4: HARDWARE COMPATIBILITY CHECKING
-        // --------------------------------------------------
+        // FEATURE 4 + 5: COMPATIBILITY CHECKING
+        // AND COMPATIBLE ALTERNATIVE SUGGESTIONS
 
         $warnings = [];
         $alternatives = [];
+        $compatibilityChecked = false;
 
-        // Initialize variables so the view always receives them
         $cpu = null;
         $mobo = null;
         $ram = null;
@@ -60,8 +57,6 @@ class BuildController extends Controller
         $casing = null;
         $psu = null;
 
-        // Only check compatibility when ALL required
-        // component types have been selected.
         if ($isBuildComplete) {
 
             $cpu = $selectedProducts->get('CPU');
@@ -71,65 +66,76 @@ class BuildController extends Controller
             $casing = $selectedProducts->get('Casing');
             $psu = $selectedProducts->get('PSU');
 
+            $compatibilityChecked = true;
+
             // 1. CPU + Motherboard Socket
-            if ($cpu->socket_type && $mobo->socket_type) {
 
-                if (strtolower($cpu->socket_type) !== strtolower($mobo->socket_type)) {
+            if (!$cpu->socket_type || !$mobo->socket_type) {
 
-                    $warnings[] = [
-                        'type' => 'CPU / Motherboard',
-                        'title' => 'Socket Mismatch',
-                        'details' => "The CPU uses {$cpu->socket_type}, while the motherboard uses {$mobo->socket_type}.",
-                        'cpu_socket' => $cpu->socket_type,
-                        'motherboard_socket' => $mobo->socket_type,
-                    ];
+                $warnings[] = [
+                    'type' => 'CPU / Motherboard',
+                    'title' => 'Compatibility Data Missing',
+                    'details' => 'CPU or motherboard socket information is missing, so socket compatibility cannot be verified.',
+                ];
 
-                    // FEATURE 5:
-                    // Find motherboards compatible with the selected CPU.
-                    $alternatives['CPU / Motherboard'] = Product::with(['category', 'brand'])
-                        ->whereHas('category', function ($query) {
-                            $query->where('name', 'Motherboard');
-                        })
-                        ->where('socket_type', $cpu->socket_type)
-                        ->where('is_active', true)
-                        ->where('stock', '>', 0)
-                        ->where('id', '!=', $mobo->id)
-                        ->orderBy('price', 'asc')
-                        ->take(5)
-                        ->get();
-                }
+            } elseif (strtolower($cpu->socket_type) !== strtolower($mobo->socket_type)) {
+
+                $warnings[] = [
+                    'type' => 'CPU / Motherboard',
+                    'title' => 'Socket Mismatch',
+                    'details' => "The CPU uses {$cpu->socket_type}, while the motherboard uses {$mobo->socket_type}.",
+                    'cpu_socket' => $cpu->socket_type,
+                    'motherboard_socket' => $mobo->socket_type,
+                ];
+
+                $alternatives['CPU / Motherboard'] = Product::with(['category', 'brand'])
+                    ->whereHas('category', function ($query) {
+                        $query->where('name', 'Motherboard');
+                    })
+                    ->where('socket_type', $cpu->socket_type)
+                    ->where('is_active', true)
+                    ->where('stock', '>', 0)
+                    ->where('id', '!=', $mobo->id)
+                    ->orderBy('price', 'asc')
+                    ->take(5)
+                    ->get();
             }
 
             // 2. Motherboard + RAM
-            if ($mobo->ram_type && $ram->ram_type) {
 
-                if (strtolower($mobo->ram_type) !== strtolower($ram->ram_type)) {
+            if (!$mobo->ram_type || !$ram->ram_type) {
 
-                    $warnings[] = [
-                        'type' => 'Motherboard / RAM',
-                        'title' => 'RAM Generation Mismatch',
-                        'details' => "The motherboard supports {$mobo->ram_type}, but the selected RAM is {$ram->ram_type}.",
-                        'motherboard_ram' => $mobo->ram_type,
-                        'ram_type' => $ram->ram_type,
-                    ];
+                $warnings[] = [
+                    'type' => 'Motherboard / RAM',
+                    'title' => 'Compatibility Data Missing',
+                    'details' => 'Motherboard or RAM type information is missing, so RAM compatibility cannot be verified.',
+                ];
 
-                    // FEATURE 5:
-                    // Find RAM compatible with the selected motherboard.
-                    $alternatives['Motherboard / RAM'] = Product::with(['category', 'brand'])
-                        ->whereHas('category', function ($query) {
-                            $query->where('name', 'RAM');
-                        })
-                        ->where('ram_type', $mobo->ram_type)
-                        ->where('is_active', true)
-                        ->where('stock', '>', 0)
-                        ->where('id', '!=', $ram->id)
-                        ->orderBy('price', 'asc')
-                        ->take(5)
-                        ->get();
-                }
+            } elseif (strtolower($mobo->ram_type) !== strtolower($ram->ram_type)) {
+
+                $warnings[] = [
+                    'type' => 'Motherboard / RAM',
+                    'title' => 'RAM Generation Mismatch',
+                    'details' => "The motherboard supports {$mobo->ram_type}, but the selected RAM is {$ram->ram_type}.",
+                    'motherboard_ram' => $mobo->ram_type,
+                    'ram_type' => $ram->ram_type,
+                ];
+
+                $alternatives['Motherboard / RAM'] = Product::with(['category', 'brand'])
+                    ->whereHas('category', function ($query) {
+                        $query->where('name', 'RAM');
+                    })
+                    ->where('ram_type', $mobo->ram_type)
+                    ->where('is_active', true)
+                    ->where('stock', '>', 0)
+                    ->where('id', '!=', $ram->id)
+                    ->orderBy('price', 'asc')
+                    ->take(5)
+                    ->get();
             }
 
             // 3. PSU Wattage
+
             $requiredWattage = $totalWattage - $psu->wattage;
             $safePSULevel = $requiredWattage + 50;
 
@@ -143,8 +149,6 @@ class BuildController extends Controller
                     'psu_wattage' => $psu->wattage,
                 ];
 
-                // FEATURE 5:
-                // Find PSUs with enough wattage for the current build.
                 $alternatives['PSU / Build'] = Product::with(['category', 'brand'])
                     ->whereHas('category', function ($query) {
                         $query->where('name', 'PSU');
@@ -159,38 +163,40 @@ class BuildController extends Controller
             }
 
             // 4. GPU + Casing Clearance
-            if ($gpu->gpu_length_mm && $casing->case_clearance_mm) {
 
-                if ($gpu->gpu_length_mm > $casing->case_clearance_mm) {
+            if (!$gpu->gpu_length_mm || !$casing->case_clearance_mm) {
 
-                    $warnings[] = [
-                        'type' => 'GPU / Casing',
-                        'title' => 'GPU Too Long',
-                        'details' => "The GPU is {$gpu->gpu_length_mm}mm long, but the casing supports GPUs up to {$casing->case_clearance_mm}mm.",
-                        'gpu_length' => $gpu->gpu_length_mm,
-                        'case_clearance' => $casing->case_clearance_mm,
-                    ];
+                $warnings[] = [
+                    'type' => 'GPU / Casing',
+                    'title' => 'Compatibility Data Missing',
+                    'details' => 'GPU length or case clearance information is missing, so physical fit cannot be verified.',
+                ];
 
-                    // FEATURE 5:
-                    // Find cases that can physically fit the selected GPU.
-                    $alternatives['GPU / Casing'] = Product::with(['category', 'brand'])
-                        ->whereHas('category', function ($query) {
-                            $query->where('name', 'Casing');
-                        })
-                        ->where('case_clearance_mm', '>=', $gpu->gpu_length_mm)
-                        ->where('is_active', true)
-                        ->where('stock', '>', 0)
-                        ->where('id', '!=', $casing->id)
-                        ->orderBy('price', 'asc')
-                        ->take(5)
-                        ->get();
-                }
+            } elseif ($gpu->gpu_length_mm > $casing->case_clearance_mm) {
+
+                $warnings[] = [
+                    'type' => 'GPU / Casing',
+                    'title' => 'GPU Too Long',
+                    'details' => "The GPU is {$gpu->gpu_length_mm}mm long, but the casing supports GPUs up to {$casing->case_clearance_mm}mm.",
+                    'gpu_length' => $gpu->gpu_length_mm,
+                    'case_clearance' => $casing->case_clearance_mm,
+                ];
+
+                $alternatives['GPU / Casing'] = Product::with(['category', 'brand'])
+                    ->whereHas('category', function ($query) {
+                        $query->where('name', 'Casing');
+                    })
+                    ->where('case_clearance_mm', '>=', $gpu->gpu_length_mm)
+                    ->where('is_active', true)
+                    ->where('stock', '>', 0)
+                    ->where('id', '!=', $casing->id)
+                    ->orderBy('price', 'asc')
+                    ->take(5)
+                    ->get();
             }
         }
 
-        // --------------------------------------------------
         // BUILD TEMPLATES
-        // --------------------------------------------------
 
         $templates = BuildTemplate::with('products.category')->get();
 
@@ -209,6 +215,7 @@ class BuildController extends Controller
             'casing',
             'psu',
             'alternatives',
+            'compatibilityChecked',
         ));
     }
 

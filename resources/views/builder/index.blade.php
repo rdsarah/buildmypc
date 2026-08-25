@@ -28,20 +28,46 @@
 @endif
 
 @if(count($selectedProducts) > 0)
-    @if(count($warnings) > 0)
+
+    @if(!$isBuildComplete)
+
+        <div class="warning-card mb-4">
+            <h5 class="fw-bold mb-2">⚠️ Build Incomplete</h5>
+
+            <p class="mb-2">
+                Select all required components before compatibility can be checked.
+            </p>
+
+            <div class="small">
+                Missing:
+                <strong>{{ implode(', ', $missingComponents) }}</strong>
+            </div>
+        </div>
+
+    @elseif(count($warnings) > 0)
+
         <div class="warning-card mb-4">
             <h5 class="fw-bold mb-2">⚠️ Compatibility Warnings Detected</h5>
+
             <ul class="mb-0 ps-3">
                 @foreach($warnings as $warning)
-                    <li class="mb-1">{{ $warning }}</li>
+                    <li class="mb-1">
+                        <strong>{{ $warning['title'] }}</strong>:
+                        {{ $warning['details'] }}
+                    </li>
                 @endforeach
             </ul>
         </div>
+
     @else
-        <div class="notice-card mb-4 text-success border-success" style="background: rgba(9, 219, 199, 0.05);">
+
+        <div class="notice-card mb-4 text-success border-success"
+             style="background: rgba(9, 219, 199, 0.05);">
             ✅ All selected components are compatible.
         </div>
+
     @endif
+
 @endif
 
 <div class="row g-4">
@@ -110,11 +136,17 @@
                 <strong class="text-white">{{ $totalWattage }}W</strong>
             </div>
             <div class="mb-3">
-                <span class="empty-text">Compatibility:</span> 
+                <span class="empty-text">Compatibility:</span>
+
                 @if(count($selectedProducts) == 0)
                     <span class="badge bg-secondary">Empty Build</span>
+
+                @elseif(!$isBuildComplete)
+                    <span class="badge bg-warning text-dark">Incomplete</span>
+
                 @elseif(count($warnings) > 0)
                     <span class="badge bg-danger">Issues Found</span>
+
                 @else
                     <span class="badge bg-success">Compatible</span>
                 @endif
