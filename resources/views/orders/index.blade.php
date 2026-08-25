@@ -58,7 +58,7 @@
             <span class="badge {{ $badgeClass }} fs-6">{{ ucfirst($trackedOrder->status) }}</span>
         </div>
 
-        <p class="text-muted small">Placed on: {{ $trackedOrder->created_at ? $trackedOrder->created_at->format('M d, Y h:i A') : 'N/A' }}</p>
+        <p class="text-white-50 small">Placed on: {{ $trackedOrder->created_at ? $trackedOrder->created_at->format('M d, Y h:i A') : 'N/A' }}</p>
 
         <!-- Cancel Option if eligible -->
         @if(in_array($trackedOrder->status, ['pending', 'processing']))
@@ -126,7 +126,7 @@
                                 <h5 class="fw-bold mb-0 text-white">#{{ $order->order_number }}</h5>
                                 <span class="badge {{ $statusBadge }}">{{ ucfirst($order->status) }}</span>
                             </div>
-                            <small class="text-muted">
+                            <small class="text-white-50">
                                 Placed on {{ $order->created_at ? $order->created_at->format('M d, Y') : 'N/A' }} • 
                                 {{ $order->items ? $order->items->count() : 0 }} Items
                             </small>

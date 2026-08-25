@@ -164,9 +164,9 @@
                             <tr>
                                 <td class="ps-3 fw-bold text-white">#{{ $order->id }}</td>
                                 <td>
-                                    <div class="fw-bold text-white">{{ $order->customer_name }}</div>
-                                    <div class="small text-muted">{{ $order->customer_email }}</div>
-                                    <div class="small text-muted">{{ $order->created_at->format('M d, Y h:i A') }}</div>
+                                    <div class="fw-bold text-white">{{ $order->customer_name ?: ($order->user->name ?? 'Unknown Customer') }}</div>
+                                    <div class="small text-info">{{ $order->customer_email ?: ($order->user->email ?? 'No Email') }}</div>
+                                    <div class="small text-white-50">{{ $order->created_at ? $order->created_at->format('M d, Y h:i A') : 'No Date' }}</div>
                                 </td>
                                 <td>
                                     <ul class="list-unstyled mb-0 small text-white-50">
