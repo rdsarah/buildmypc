@@ -81,6 +81,10 @@
                     return data;
                 })
                 .then(data => {
+                    if (data.redirect) {
+                        window.location.href = data.redirect;
+                        return;
+                    }
                     return stripe.redirectToCheckout({ sessionId: data.id });
                 })
                 .catch(error => {

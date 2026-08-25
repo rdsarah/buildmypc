@@ -41,6 +41,11 @@
 
                     <!-- Authentication Action Group -->
                     @if(auth()->check())
+                        @if(auth()->user()->role === 'admin')
+                            <li class="nav-item ms-lg-3 mt-2 mt-lg-0">
+                                <a href="{{ route('admin.dashboard') }}" class="btn btn-fern btn-sm px-3 py-2">Admin Dashboard</a>
+                            </li>
+                        @endif
                         <li class="nav-item ms-lg-3 mt-2 mt-lg-0">
                             <span class="text-light me-2 small">Hi, {{ auth()->user()->name ?? 'User' }}</span>
                         </li>

@@ -7,6 +7,7 @@ use App\Models\Category;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use App\Models\Review;
+use App\Models\Setting;
 
 class ProductController extends Controller
 {
@@ -15,6 +16,10 @@ class ProductController extends Controller
         $productsQuery = Product::query()
             ->with(['category', 'brand'])
             ->where('is_active', true);
+
+        if (Setting::get('hide_out_of_stock', '0') === '1') {
+            $productsQuery->where('stock', '>', 0);
+        }
 
         if ($request->filled('search')) {
             $search = $request->search;

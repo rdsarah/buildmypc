@@ -69,7 +69,19 @@ Route::middleware(['auth'])->group(function () {
 // Admin Management Routes
 Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/admin', [AdminController::class, 'dashboard'])->name('admin.dashboard');
-    Route::post('/admin/products/{product}/update', [AdminController::class, 'updateProduct'])->name('admin.products.update');
+    
+    // Product Management
+    Route::get('/admin/products/create', [AdminController::class, 'createProduct'])->name('admin.products.create');
+    Route::post('/admin/products', [AdminController::class, 'storeProduct'])->name('admin.products.store');
+    Route::get('/admin/products/{product}/edit', [AdminController::class, 'editProduct'])->name('admin.products.edit');
+    Route::put('/admin/products/{product}', [AdminController::class, 'updateFullProduct'])->name('admin.products.updateFull');
+    Route::delete('/admin/products/{product}', [AdminController::class, 'deleteProduct'])->name('admin.products.delete');
+    Route::post('/admin/products/{product}/update', [AdminController::class, 'updateProduct'])->name('admin.products.update'); // Quick update
+    
+    // Settings
+    Route::post('/admin/settings/toggle-out-of-stock', [AdminController::class, 'toggleHideOutOfStock'])->name('admin.settings.toggleOutOfStock');
+    
+    // Orders & Templates
     Route::post('/admin/orders/{order}/status', [AdminController::class, 'updateOrderStatus'])->name('admin.orders.updateStatus');
     Route::post('/admin/templates', [AdminController::class, 'createTemplate'])->name('admin.templates.create');
     Route::delete('/admin/templates/{template}', [AdminController::class, 'deleteTemplate'])->name('admin.templates.delete');

@@ -298,6 +298,7 @@ class BuildController extends Controller
 
         $weights = $allocations[$focus];
         $build = [];
+        $hideOutOfStock = \App\Models\Setting::get('hide_out_of_stock', '0') === '1';
 
         foreach ($weights as $catName => $weight) {
             $category = Category::where('name', $catName)->first();
@@ -308,18 +309,28 @@ class BuildController extends Controller
             $targetPrice = $budget * $weight;
 
             // Search for products under target price
-            $product = Product::where('category_id', $category->id)
+            $query = Product::where('category_id', $category->id)
                 ->where('is_active', true)
                 ->where('price', '<=', $targetPrice)
-                ->orderBy('price', 'desc')
-                ->first();
+                ->orderBy('price', 'desc');
+                
+            if ($hideOutOfStock) {
+                $query->where('stock', '>', 0);
+            }
+            
+            $product = $query->first();
 
             // Fallback to cheapest if none fits under the allocation
             if (!$product) {
-                $product = Product::where('category_id', $category->id)
+                $fallbackQuery = Product::where('category_id', $category->id)
                     ->where('is_active', true)
-                    ->orderBy('price', 'asc')
-                    ->first();
+                    ->orderBy('price', 'asc');
+                    
+                if ($hideOutOfStock) {
+                    $fallbackQuery->where('stock', '>', 0);
+                }
+                
+                $product = $fallbackQuery->first();
             }
 
             if ($product) {

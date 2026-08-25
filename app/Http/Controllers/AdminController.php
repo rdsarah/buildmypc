@@ -6,12 +6,18 @@ use App\Models\BuildTemplate;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\User;
+use App\Models\Category;
+use App\Models\Brand;
+use App\Models\Setting;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 
 class AdminController extends Controller
 {
     public function dashboard(Request $request)
     {
+        $hideOutOfStock = Setting::get('hide_out_of_stock', '0');
+
         $products = Product::with(['category', 'brand'])
             ->orderBy('name')
             ->paginate(10, ['*'], 'products_page')
@@ -46,7 +52,8 @@ class AdminController extends Controller
             'productsCount',
             'ordersCount',
             'usersCount',
-            'totalRevenue'
+            'totalRevenue',
+            'hideOutOfStock'
         ));
     }
 
@@ -62,6 +69,88 @@ class AdminController extends Controller
         return redirect()->back()->with('success', "Product '{$product->name}' updated successfully.");
     }
 
+    public function createProduct()
+    {
+        $categories = Category::all();
+        $brands = Brand::all();
+        return view('admin.products.create', compact('categories', 'brands'));
+    }
+
+    public function storeProduct(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'slug' => 'nullable|string|max:255|unique:products,slug',
+            'category_id' => 'required|exists:categories,id',
+            'brand_id' => 'nullable|exists:brands,id',
+            'price' => 'required|numeric|min:0',
+            'stock' => 'required|integer|min:0',
+            'description' => 'nullable|string',
+            'image_url' => 'nullable|url',
+            // Specific specs
+            'socket_type' => 'nullable|string|max:100',
+            'ram_type' => 'nullable|string|max:100',
+            'form_factor' => 'nullable|string|max:100',
+            'wattage' => 'nullable|integer',
+            'storage_type' => 'nullable|string|max:100',
+            'gpu_length_mm' => 'nullable|numeric',
+            'case_clearance_mm' => 'nullable|numeric',
+        ]);
+
+        if (empty($validated['slug'])) {
+            $validated['slug'] = Str::slug($validated['name']);
+        }
+        $validated['is_active'] = $request->has('is_active');
+
+        Product::create($validated);
+
+        return redirect()->route('admin.dashboard')->with('success', 'Product created successfully.');
+    }
+
+    public function editProduct(Product $product)
+    {
+        $categories = Category::all();
+        $brands = Brand::all();
+        return view('admin.products.edit', compact('product', 'categories', 'brands'));
+    }
+
+    public function updateFullProduct(Request $request, Product $product)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'slug' => 'nullable|string|max:255|unique:products,slug,' . $product->id,
+            'category_id' => 'required|exists:categories,id',
+            'brand_id' => 'nullable|exists:brands,id',
+            'price' => 'required|numeric|min:0',
+            'stock' => 'required|integer|min:0',
+            'description' => 'nullable|string',
+            'image_url' => 'nullable|url',
+            // Specific specs
+            'socket_type' => 'nullable|string|max:100',
+            'ram_type' => 'nullable|string|max:100',
+            'form_factor' => 'nullable|string|max:100',
+            'wattage' => 'nullable|integer',
+            'storage_type' => 'nullable|string|max:100',
+            'gpu_length_mm' => 'nullable|numeric',
+            'case_clearance_mm' => 'nullable|numeric',
+        ]);
+
+        if (empty($validated['slug'])) {
+            $validated['slug'] = Str::slug($validated['name']);
+        }
+        $validated['is_active'] = $request->has('is_active');
+
+        $product->update($validated);
+
+        return redirect()->route('admin.dashboard')->with('success', 'Product updated successfully.');
+    }
+
+    public function deleteProduct(Product $product)
+    {
+        $product->delete();
+        return redirect()->route('admin.dashboard')->with('success', 'Product deleted successfully.');
+    }
+
     public function updateOrderStatus(Request $request, Order $order)
     {
         $validated = $request->validate([
@@ -70,7 +159,13 @@ class AdminController extends Controller
 
         $order->update($validated);
 
-        return redirect()->back()->with('success', "Order #{$order->id} status updated to '{$request->status}'.");
+        // Dispatch Email Notification (FR-40)
+        $email = $order->user->email ?? $order->customer_email;
+        if ($email) {
+            \Illuminate\Support\Facades\Mail::to($email)->send(new \App\Mail\OrderStatusUpdated($order));
+        }
+
+        return redirect()->back()->with('success', "Order #{$order->id} status updated to '{$request->status}'. Email notification sent.");
     }
 
     public function createTemplate(Request $request)
@@ -100,5 +195,16 @@ class AdminController extends Controller
         $template->delete();
 
         return redirect()->back()->with('success', "Template '{$template->name}' deleted successfully.");
+    }
+
+    public function toggleHideOutOfStock(Request $request)
+    {
+        $currentValue = Setting::get('hide_out_of_stock', '0');
+        $newValue = $currentValue === '1' ? '0' : '1';
+        
+        Setting::set('hide_out_of_stock', $newValue);
+        
+        $statusMessage = $newValue === '1' ? 'Enabled: Out-of-stock items are now hidden.' : 'Disabled: Out-of-stock items are now visible.';
+        return redirect()->back()->with('success', $statusMessage);
     }
 }

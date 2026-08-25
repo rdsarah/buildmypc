@@ -7,6 +7,8 @@ use App\Models\Product;
 use Illuminate\Http\Request;
 use App\Models\ComparisonHistory;
 use Illuminate\Support\Facades\Auth;
+use App\Models\Setting;
+
 class ComparisonController extends Controller
 {
     public function index(Request $request)
@@ -22,11 +24,15 @@ class ComparisonController extends Controller
             $category = Category::where('slug', $request->category)->first();
 
             if ($category) {
-                $products = Product::with(['brand', 'category'])
+                $query = Product::with(['brand', 'category'])
                     ->where('category_id', $category->id)
-                    ->where('is_active', true)
-                    ->orderBy('name')
-                    ->get();
+                    ->where('is_active', true);
+
+                if (Setting::get('hide_out_of_stock', '0') === '1') {
+                    $query->where('stock', '>', 0);
+                }
+
+                $products = $query->orderBy('name')->get();
             }
         }
 

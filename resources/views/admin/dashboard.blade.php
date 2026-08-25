@@ -50,11 +50,32 @@
 </div>
 
 <div class="row g-4">
+    <!-- Global Store Settings Panel -->
+    <div class="col-12">
+        <div class="glass-card d-flex flex-column flex-md-row justify-content-between align-items-md-center p-3">
+            <div class="mb-3 mb-md-0">
+                <h5 class="fw-bold mb-1">Global Store Settings</h5>
+                <p class="text-muted small mb-0">Automatically hide products with 0 stock from customers across the catalog and PC builder.</p>
+            </div>
+            <form action="{{ route('admin.settings.toggleOutOfStock') }}" method="POST" class="mb-0">
+                @csrf
+                <button type="submit" class="btn {{ $hideOutOfStock === '1' ? 'btn-danger' : 'btn-success' }} fw-bold">
+                    {{ $hideOutOfStock === '1' ? 'Disable Auto-Hide (Currently ON)' : 'Enable Auto-Hide (Currently OFF)' }}
+                </button>
+            </form>
+        </div>
+    </div>
+
     <!-- Inventory Management Panel -->
     <div class="col-12">
         <div class="glass-card mb-4">
             <div class="d-flex justify-content-between align-items-center mb-3">
-                <h5 class="fw-bold mb-0">Inventory Management</h5>
+                <div class="d-flex align-items-center gap-3">
+                    <h5 class="fw-bold mb-0">Inventory Management</h5>
+                    <a href="{{ route('admin.products.create') }}" class="btn btn-sm btn-fern">
+                        <i class="fas fa-plus"></i> Add New Product
+                    </a>
+                </div>
                 <span class="empty-text">Page {{ $products->currentPage() }} of {{ $products->lastPage() }}</span>
             </div>
             
@@ -65,7 +86,7 @@
                             <th class="ps-3">Product Name & Category</th>
                             <th>Current Price</th>
                             <th>Stock Level</th>
-                            <th class="pe-3 text-end" style="width: 250px;">Update Specs</th>
+                            <th class="pe-3 text-end" style="width: 320px;">Quick Manage & Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -88,12 +109,20 @@
                                     @endif
                                 </td>
                                 <td class="pe-3">
-                                    <form action="{{ route('admin.products.update', $product->id) }}" method="POST" class="d-flex gap-2 justify-content-end">
-                                        @csrf
-                                        <input type="number" step="0.01" name="price" value="{{ $product->price }}" class="form-control form-control-sm" placeholder="Price" style="width: 90px;" required>
-                                        <input type="number" name="stock" value="{{ $product->stock }}" class="form-control form-control-sm" placeholder="Stock" style="width: 70px;" required>
-                                        <button type="submit" class="btn btn-fern btn-sm px-3">Save</button>
-                                    </form>
+                                    <div class="d-flex gap-2 justify-content-end align-items-center">
+                                        <form action="{{ route('admin.products.update', $product->id) }}" method="POST" class="d-flex gap-1 mb-0">
+                                            @csrf
+                                            <input type="number" step="0.01" name="price" value="{{ $product->price }}" class="form-control form-control-sm" placeholder="Price" style="width: 80px;" required>
+                                            <input type="number" name="stock" value="{{ $product->stock }}" class="form-control form-control-sm" placeholder="Stock" style="width: 60px;" required>
+                                            <button type="submit" class="btn btn-fern btn-sm px-2">Save</button>
+                                        </form>
+                                        <a href="{{ route('admin.products.edit', $product->id) }}" class="btn btn-sm btn-soft text-primary border-primary px-2">Edit</a>
+                                        <form action="{{ route('admin.products.delete', $product->id) }}" method="POST" class="mb-0">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn btn-sm btn-soft text-danger border-danger px-2" onclick="return confirm('Are you sure you want to delete this product?')">Delete</button>
+                                        </form>
+                                    </div>
                                 </td>
                             </tr>
                         @empty
