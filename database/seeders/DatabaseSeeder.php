@@ -12,15 +12,12 @@ class DatabaseSeeder extends Seeder
     {
         
         // Create Admin User
-        User::updateOrCreate(
-            ['email' => 'admin@test.com'],
-            [
-                'name' => 'System Admin',
-                'password' => Hash::make('abcd1234'),
-                'is_admin' => true, // Ensure your users table has an is_admin column or role field
-                'role' => 'admin',   // Included if your app uses a role column instead
-            ]
-        );
+        User::create([
+            'name' => 'System Admin',
+            'email' => 'admin@test.com',
+            'password' => Hash::make('password'),
+            'role' => 'admin',
+        ]);
         $this->call([
             ProductCatalogSeeder::class,
             OrderSeeder::class,
