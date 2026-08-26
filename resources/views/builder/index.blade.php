@@ -59,6 +59,75 @@
             </ul>
         </div>
 
+        @if(count($alternatives) > 0)
+            <div class="glass-card mb-4">
+                <h5 class="fw-bold mb-3">🔄 Compatible Alternatives</h5>
+
+                @foreach($alternatives as $type => $products)
+                    <div class="mb-4">
+                        <h6 class="fw-bold text-white">
+                            Alternatives for {{ $type }}
+                        </h6>
+
+                        @if($products->count() > 0)
+                            <div class="row g-3">
+                                @foreach($products as $alternative)
+                                    <div class="col-md-6">
+                                        <div class="builder-row-card h-100">
+                                            <div class="d-flex justify-content-between align-items-start">
+                                                <div>
+                                                    <div class="fw-bold text-white">
+                                                        {{ $alternative->name }}
+                                                    </div>
+
+                                                    <div class="small text-muted">
+                                                        {{ $alternative->brand?->name }}
+                                                        @if($alternative->model)
+                                                            • {{ $alternative->model }}
+                                                        @endif
+                                                    </div>
+
+                                                    @if($alternative->wattage)
+                                                        <div class="small text-muted">
+                                                            {{ $alternative->wattage }}W
+                                                        </div>
+                                                    @endif
+
+                                                    @if($alternative->ram_type)
+                                                        <div class="small text-muted">
+                                                            {{ $alternative->ram_type }}
+                                                        </div>
+                                                    @endif
+                                                </div>
+
+                                                <div class="text-end">
+                                                    <span class="product-price d-block mb-2">
+                                                        ৳{{ number_format($alternative->price, 0) }}
+                                                    </span>
+
+                                                    <form action="{{ route('builder.add', $alternative->id) }}" method="POST">
+                                                        @csrf
+                                                        <button type="submit" class="btn btn-sm btn-fern">
+                                                            Replace
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        @else
+                            <p class="small text-muted">
+                                No compatible alternatives currently available.
+                            </p>
+                        @endif
+                    </div>
+                @endforeach
+            </div>
+        @endif
+
+        
     @else
 
         <div class="notice-card mb-4 text-success border-success"

@@ -88,7 +88,7 @@ class BuildController extends Controller
                     'motherboard_socket' => $mobo->socket_type,
                 ];
 
-                $alternatives['CPU / Motherboard'] = Product::with(['category', 'brand'])
+                $alternatives['Motherboard'] = Product::with(['category', 'brand'])
                     ->whereHas('category', function ($query) {
                         $query->where('name', 'Motherboard');
                     })
@@ -97,7 +97,7 @@ class BuildController extends Controller
                     ->where('stock', '>', 0)
                     ->where('id', '!=', $mobo->id)
                     ->orderBy('price', 'asc')
-                    ->take(5)
+                    ->take(1)
                     ->get();
             }
 
@@ -121,7 +121,7 @@ class BuildController extends Controller
                     'ram_type' => $ram->ram_type,
                 ];
 
-                $alternatives['Motherboard / RAM'] = Product::with(['category', 'brand'])
+                $alternatives['RAM'] = Product::with(['category', 'brand'])
                     ->whereHas('category', function ($query) {
                         $query->where('name', 'RAM');
                     })
@@ -130,7 +130,7 @@ class BuildController extends Controller
                     ->where('stock', '>', 0)
                     ->where('id', '!=', $ram->id)
                     ->orderBy('price', 'asc')
-                    ->take(5)
+                    ->take(1)
                     ->get();
             }
 
@@ -149,7 +149,7 @@ class BuildController extends Controller
                     'psu_wattage' => $psu->wattage,
                 ];
 
-                $alternatives['PSU / Build'] = Product::with(['category', 'brand'])
+                $alternatives['PSU'] = Product::with(['category', 'brand'])
                     ->whereHas('category', function ($query) {
                         $query->where('name', 'PSU');
                     })
@@ -158,7 +158,7 @@ class BuildController extends Controller
                     ->where('stock', '>', 0)
                     ->where('id', '!=', $psu->id)
                     ->orderBy('price', 'asc')
-                    ->take(5)
+                    ->take(1)
                     ->get();
             }
 
@@ -182,7 +182,7 @@ class BuildController extends Controller
                     'case_clearance' => $casing->case_clearance_mm,
                 ];
 
-                $alternatives['GPU / Casing'] = Product::with(['category', 'brand'])
+                $alternatives['Casing'] = Product::with(['category', 'brand'])
                     ->whereHas('category', function ($query) {
                         $query->where('name', 'Casing');
                     })
@@ -191,7 +191,7 @@ class BuildController extends Controller
                     ->where('stock', '>', 0)
                     ->where('id', '!=', $casing->id)
                     ->orderBy('price', 'asc')
-                    ->take(5)
+                    ->take(1)
                     ->get();
             }
         }
@@ -222,11 +222,15 @@ class BuildController extends Controller
     public function addComponent(Request $request, Product $product)
     {
         $build = session()->get('active_build', []);
+
         $build[$product->category->name] = $product->id;
+
         session()->put('active_build', $build);
 
-        return redirect()->route('builder.index')->with('success', "'{$product->name}' added to your build.");
+        return redirect()->route('builder.index')
+            ->with('success', "'{$product->name}' added to your build.");
     }
+    
 
     public function removeComponent($categoryName)
     {
