@@ -10,6 +10,11 @@ use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\TrendingController;
+use App\Http\Controllers\BlogController;
+use App\Http\Controllers\CommentController;
+use App\Http\Controllers\WishlistController;
+use App\Http\Controllers\ProductAlertController;
+use App\Http\Controllers\AnalyticsController;
 use Illuminate\Support\Facades\Route;
 
 // Home Route
@@ -105,4 +110,55 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
     Route::get('/orders/{order}/invoice', [OrderController::class, 'downloadInvoice'])->name('orders.invoice');
     Route::post('/orders/{id}/cancel', [OrderController::class, 'cancel'])->name('orders.cancel');
+});
+
+// Community Blog Routes
+Route::get('/blogs', [BlogController::class, 'index'])
+    ->name('blogs.index');
+
+Route::middleware('auth')->group(function () {
+    Route::get('/blogs/create', [BlogController::class, 'create'])
+        ->name('blogs.create');
+
+    Route::post('/blogs', [BlogController::class, 'store'])
+        ->name('blogs.store');
+});
+
+Route::get('/blogs/{blog}', [BlogController::class, 'show'])
+    ->name('blogs.show');
+
+// Community Blog Comment Routes
+Route::middleware('auth')->group(function () {
+    Route::post('/blogs/{blog}/comments', [CommentController::class, 'store'])
+        ->name('comments.store');
+
+    Route::post('/comments/{comment}/reply', [CommentController::class, 'reply'])
+        ->name('comments.reply');
+});
+
+// Wishlist, Product Alerts, Personal Analytics
+Route::middleware('auth')->group(function () {
+    Route::get('/wishlist', [WishlistController::class, 'index'])
+        ->name('wishlist.index');
+
+    Route::post('/wishlist/{product}', [WishlistController::class, 'store'])
+        ->name('wishlist.store');
+
+    Route::delete('/wishlist/{product}', [WishlistController::class, 'destroy'])
+        ->name('wishlist.destroy');
+
+    Route::get('/product-alerts', [ProductAlertController::class, 'index'])
+        ->name('product-alerts.index');
+
+    Route::post('/product-alerts/{alert}/read', [ProductAlertController::class, 'markAsRead'])
+        ->name('product-alerts.read');
+
+    Route::post('/product-alerts/read-all', [ProductAlertController::class, 'markAllAsRead'])
+        ->name('product-alerts.readAll');
+
+    Route::get('/analytics', [AnalyticsController::class, 'index'])
+        ->name('analytics.index');
+
+    Route::get('/analytics/pdf', [AnalyticsController::class, 'downloadPdf'])
+        ->name('analytics.pdf');
 });
