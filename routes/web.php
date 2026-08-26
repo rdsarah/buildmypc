@@ -99,3 +99,10 @@ Route::post('/register', [AuthController::class, 'register'])->name('register.po
 Route::get('/admin/login', [AuthController::class, 'showAdminLogin'])->name('admin.login');
 Route::post('/admin/login', [AuthController::class, 'adminLogin'])->name('admin.login.post');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
+// Order Routes (Authenticated)
+Route::middleware(['auth'])->group(function () {
+    Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
+    Route::get('/orders/{order}/invoice', [OrderController::class, 'downloadInvoice'])->name('orders.invoice');
+    Route::post('/orders/{id}/cancel', [OrderController::class, 'cancel'])->name('orders.cancel');
+});

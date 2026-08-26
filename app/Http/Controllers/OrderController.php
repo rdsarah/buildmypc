@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Order;
 use Illuminate\Http\Request;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class OrderController extends Controller
 {
@@ -43,6 +44,24 @@ class OrderController extends Controller
     }
 
     /**
+     * Generate and download PDF Invoice.
+     */
+    public function downloadInvoice(Order $order)
+    {
+        // Allow access to order owner or admin
+        if ($order->user_id !== auth()->id() && (!auth()->user() || !auth()->user()->is_admin)) {
+            abort(403, 'Unauthorized access to this invoice.');
+        }
+
+        $order->load(['items.product', 'user']);
+
+        $pdf = Pdf::loadView('invoices.pdf', compact('order'));
+        $pdf->setPaper('a4', 'portrait');
+
+        return $pdf->download('Invoice-' . $order->order_number . '.pdf');
+    }
+
+    /**
      * Cancel an active order (pending or processing).
      */
     public function cancel(Request $request, $id)
@@ -51,7 +70,7 @@ class OrderController extends Controller
             ->where('user_id', auth()->id())
             ->firstOrFail();
 
-        if (!in_array($order->status, ['pending', 'processing'])) {
+        if (!$order->canBeCancelledByCustomer()) {
             return redirect()->back()->with('error', 'This order cannot be cancelled at its current status.');
         }
 
