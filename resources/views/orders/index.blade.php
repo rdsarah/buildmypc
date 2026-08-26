@@ -60,15 +60,23 @@
 
         <p class="text-white-50 small">Placed on: {{ $trackedOrder->created_at ? $trackedOrder->created_at->format('M d, Y h:i A') : 'N/A' }}</p>
 
-        <!-- Cancel Option if eligible -->
-        @if(in_array($trackedOrder->status, ['pending', 'processing']))
-            <form action="{{ route('orders.cancel', $trackedOrder->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to cancel this order?');">
-                @csrf
-                <button type="submit" class="btn btn-soft border-danger text-danger btn-sm mb-3">
-                    ❌ Cancel This Order
-                </button>
-            </form>
-        @elseif($trackedOrder->status === 'cancelled')
+        <!-- Actions for Tracked Result -->
+        <div class="d-flex align-items-center gap-2 mb-3">
+            <a href="{{ route('orders.invoice', $trackedOrder->id) }}" class="btn btn-soft border-info text-info btn-sm">
+                📄 Download Invoice
+            </a>
+
+            @if(in_array($trackedOrder->status, ['pending', 'processing']))
+                <form action="{{ route('orders.cancel', $trackedOrder->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to cancel this order?');">
+                    @csrf
+                    <button type="submit" class="btn btn-soft border-danger text-danger btn-sm">
+                        ❌ Cancel Order
+                    </button>
+                </form>
+            @endif
+        </div>
+
+        @if($trackedOrder->status === 'cancelled')
             <div class="notice-card mb-3 text-muted">
                 <strong>Cancelled by:</strong> {{ ucfirst($trackedOrder->cancelled_by ?? 'System') }} | 
                 <strong>Reason:</strong> {{ $trackedOrder->cancellation_reason ?? 'N/A' }}
@@ -135,6 +143,11 @@
                         <div class="d-flex align-items-center gap-2 mt-2 mt-md-0">
                             <strong class="product-price me-2">৳{{ number_format($order->total_amount ?? $order->total_price ?? 0, 0) }}</strong>
 
+                            <!-- Direct Invoice Download Button -->
+                            <a href="{{ route('orders.invoice', $order->id) }}" class="btn btn-soft border-info text-info btn-sm" title="Download PDF Invoice">
+                                📄 Invoice
+                            </a>
+
                             <!-- View Items Modal Trigger -->
                             <button type="button" class="btn btn-soft btn-sm" data-bs-toggle="modal" data-bs-target="#orderModal{{ $order->id }}">
                                 👁️ Details
@@ -190,8 +203,11 @@
                                 <span class="product-price">৳{{ number_format($order->total_amount ?? $order->total_price ?? 0, 0) }}</span>
                             </div>
                         </div>
-                        <div class="modal-footer border-secondary">
-                            <button type="button" class="btn btn-soft" data-bs-dismiss="modal">Close</button>
+                        <div class="modal-footer border-secondary justify-content-between">
+                            <a href="{{ route('orders.invoice', $order->id) }}" class="btn btn-fern btn-sm">
+                                📄 Download Invoice PDF
+                            </a>
+                            <button type="button" class="btn btn-soft btn-sm" data-bs-dismiss="modal">Close</button>
                         </div>
                     </div>
                 </div>
