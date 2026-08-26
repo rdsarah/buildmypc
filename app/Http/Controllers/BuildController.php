@@ -445,7 +445,7 @@ class BuildController extends Controller
             }
         }
 
-        session()->put('cart', $cart);
+            session()->put('cart', $cart);
 
         return redirect()->back()->with('success', "All components from '{$build->name}' were added to your cart!");
     }

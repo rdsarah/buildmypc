@@ -11,7 +11,7 @@
 
     <div class="d-flex gap-2 mt-3 mt-md-0">
         <a href="{{ route('builder.index') }}" class="btn btn-soft">💻 PC Builder</a>
-        @if(isset($cart) && count($cart) > 0)
+        @if(isset($cartItems) && $cartItems->count() > 0)
             <form action="{{ route('cart.clear') }}" method="POST" onsubmit="return confirm('Clear all items from your cart?');">
                 @csrf
                 <button type="submit" class="btn btn-soft border-danger text-danger">Clear Cart</button>
@@ -32,7 +32,7 @@
     </div>
 @endif
 
-@if(isset($cart) && count($cart) > 0)
+@if(isset($cartItems) && $cartItems->count() > 0)
     <div class="row g-4">
         <!-- CART ITEMS LIST -->
         <div class="col-lg-8">
@@ -49,34 +49,34 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach($cart as $id => $item)
+                            @foreach($cartItems as $item)
                                 <tr>
                                     <td>
                                         <div class="d-flex align-items-center gap-3">
-                                            @if(!empty($item['image']))
-                                                <img src="{{ asset('storage/' . $item['image']) }}" alt="{{ $item['name'] }}" class="rounded" style="width: 48px; height: 48px; object-fit: cover;">
+                                            @if(!empty($item->product->image))
+                                                <img src="{{ asset('storage/' . $item->product->image) }}" alt="{{ $item->product->name }}" class="rounded" style="width: 48px; height: 48px; object-fit: cover;">
                                             @else
                                                 <div class="bg-dark rounded d-flex align-items-center justify-content-center text-muted" style="width: 48px; height: 48px;">
                                                     🖥️
                                                 </div>
                                             @endif
                                             <div>
-                                                <strong class="d-block text-white">{{ $item['name'] }}</strong>
+                                                <strong class="d-block text-white">{{ $item->product->name ?? 'Product' }}</strong>
                                             </div>
                                         </div>
                                     </td>
-                                    <td class="product-price">৳{{ number_format($item['price'], 0) }}</td>
+                                    <td class="product-price">৳{{ number_format($item->product->price ?? 0, 0) }}</td>
                                     <td style="width: 140px;">
-                                        <form action="{{ route('cart.update', $id) }}" method="POST" class="d-flex align-items-center gap-1">
+                                        <form action="{{ route('cart.update', $item->id) }}" method="POST" class="d-flex align-items-center gap-1">
                                             @csrf
                                             @method('PATCH')
-                                            <input type="number" name="quantity" value="{{ $item['quantity'] }}" min="1" class="form-control form-control-sm bg-dark text-white border-secondary text-center">
+                                            <input type="number" name="quantity" value="{{ $item->quantity }}" min="1" class="form-control form-control-sm bg-dark text-white border-secondary text-center">
                                             <button type="submit" class="btn btn-soft btn-sm" title="Update Quantity">🔄</button>
                                         </form>
                                     </td>
-                                    <td class="product-price fw-bold">৳{{ number_format($item['price'] * $item['quantity'], 0) }}</td>
+                                    <td class="product-price fw-bold">৳{{ number_format(($item->product->price ?? 0) * $item->quantity, 0) }}</td>
                                     <td class="text-end">
-                                        <form action="{{ route('cart.remove', $id) }}" method="POST" class="d-inline">
+                                        <form action="{{ route('cart.remove', $item->id) }}" method="POST" class="d-inline">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="btn btn-soft border-danger text-danger btn-sm" title="Remove Item">
@@ -99,7 +99,7 @@
                 
                 <div class="d-flex justify-content-between mb-2 text-muted">
                     <span>Items Count:</span>
-                    <strong class="text-white">{{ array_sum(array_column($cart, 'quantity')) }}</strong>
+                    <strong class="text-white">{{ $cartItems->sum('quantity') }}</strong>
                 </div>
 
                 <div class="d-flex justify-content-between mb-3 text-muted">
