@@ -16,7 +16,9 @@
         </h3>
         
         <p style="margin-top: 20px;">
-            @if($order->status == 'processing')
+            @if($order->status == 'pending')
+                Your order has been received and is currently pending review. We will notify you once it begins processing.
+            @elseif($order->status == 'processing')
                 We are currently processing your order and getting it ready for shipment.
             @elseif($order->status == 'shipped')
                 Your order has been shipped and is on its way to you!

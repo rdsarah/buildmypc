@@ -160,7 +160,7 @@ class AdminController extends Controller
         $order->update($validated);
 
         // Dispatch Email Notification (FR-40)
-        $email = $order->user->email ?? $order->customer_email;
+        $email = $order->user?->email ?? $order->customer_email;
         if ($email) {
             \Illuminate\Support\Facades\Mail::to($email)->send(new \App\Mail\OrderStatusUpdated($order));
         }
