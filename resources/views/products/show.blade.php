@@ -133,6 +133,40 @@
                 @csrf
                 <button type="submit" class="btn btn-fern w-100 py-3">Add to Build</button>
             </form>
+            @if(auth()->check())
+            @php
+                $isWishlisted = \App\Models\Wishlist::where('user_id', auth()->id())
+                    ->where('product_id', $product->id)
+                    ->exists();
+            @endphp
+
+            @if($isWishlisted)
+                <form action="{{ route('wishlist.destroy', $product) }}" method="POST" class="mt-2">
+                    @csrf
+                    @method('DELETE')
+
+                    <button type="submit" class="btn btn-soft w-100 py-3">
+                        ♥ Remove from Wishlist
+                    </button>
+                </form>
+            @else
+                <form action="{{ route('wishlist.store', $product) }}" method="POST" class="mt-2">
+                    @csrf
+
+                    <button type="submit" class="btn btn-soft w-100 py-3">
+                        ♡ Add to Wishlist
+                    </button>
+                </form>
+            @endif
+        @else
+            <a href="{{ route('login') }}" class="btn btn-soft w-100 py-3 mt-2">
+                ♡ Add to Wishlist
+            </a>
+
+            <small class="text-muted d-block text-center mt-2">
+                Login to save this product to your wishlist.
+            </small>
+        @endif
         </div>
     </div>
 </div>
